@@ -317,61 +317,6 @@ const server = http.createServer(async function(req, res) {
       }
     }
 
-    // ---- API: Update theme URL (one-time use) -----
-    if (url.pathname === "/api/update-theme" && req.method === "POST") {
-      try {
-        const themeId = "182586704201";
-        const oldUrl = "https://snk-store.onrender.com/";
-        const newUrl = "https://checkout.chezyouyou.fr/";
-        const shopUrl = "https://" + SHOPIFY_STORE_DOMAIN + "/admin/api/" + SHOPIFY_API_VERSION + "/themes/" + themeId + "/assets.json";
-
-        if (!SHOPIFY_ADMIN_TOKEN) {
-          res.writeHead(400, { ...corsHeaders, "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "error", message: "SHOPIFY_ADMIN_TOKEN not configured" }));
-          return;
-        }
-
-        const getResp = await fetch(shopUrl + "?asset[key]=layout/theme.liquid", {
-          headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN }
-        });
-        const getData = await getResp.json();
-
-        if (!getData.asset || !getData.asset.value) {
-          res.writeHead(500, { ...corsHeaders, "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "error", message: "Shopify API error", httpStatus: getResp.status, response: getData }));
-          return;
-        }
-
-        const themeContent = getData.asset.value;
-
-        if (themeContent.indexOf(oldUrl) === -1) {
-          res.writeHead(200, { ...corsHeaders, "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "already_updated" }));
-          return;
-        }
-
-        const newContent = themeContent.split(oldUrl).join(newUrl);
-        const putResp = await fetch(shopUrl, {
-          method: "PUT",
-          headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN, "Content-Type": "application/json" },
-          body: JSON.stringify({ asset: { key: "layout/theme.liquid", value: newContent } })
-        });
-        const putData = await putResp.json();
-
-        if (putResp.ok) {
-          res.writeHead(200, { ...corsHeaders, "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "success", key: putData.asset && putData.asset.key }));
-        } else {
-          res.writeHead(500, { ...corsHeaders, "Content-Type": "application/json" });
-          res.end(JSON.stringify({ status: "error", details: putData }));
-        }
-      } catch(err) {
-        res.writeHead(500, { ...corsHeaders, "Content-Type": "application/json" });
-        res.end(JSON.stringify({ status: "error", message: err.message }));
-      }
-      return;
-    }
-
     // ---- Health check -----
     if (url.pathname === "/health") {
       res.writeHead(200, { ...corsHeaders, "Content-Type": "application/json" });
