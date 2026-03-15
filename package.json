@@ -1,0 +1,11 @@
+{
+  "name": "snk-store",
+  "version": "1.0.0",
+  "description": "SNK Store - Site e-commerce avec PayPal Checkout",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  }
+}
