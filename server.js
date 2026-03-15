@@ -325,10 +325,23 @@ const server = http.createServer(async function(req, res) {
         const newUrl = "https://checkout.chezyouyou.fr/";
         const shopUrl = "https://" + SHOPIFY_STORE_DOMAIN + "/admin/api/" + SHOPIFY_API_VERSION + "/themes/" + themeId + "/assets.json";
 
+        if (!SHOPIFY_ADMIN_TOKEN) {
+          res.writeHead(400, { ...corsHeaders, "Content-Type": "application/json" });
+          res.end(JSON.stringify({ status: "error", message: "SHOPIFY_ADMIN_TOKEN not configured" }));
+          return;
+        }
+
         const getResp = await fetch(shopUrl + "?asset[key]=layout/theme.liquid", {
           headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN }
         });
         const getData = await getResp.json();
+
+        if (!getData.asset || !getData.asset.value) {
+          res.writeHead(500, { ...corsHeaders, "Content-Type": "application/json" });
+          res.end(JSON.stringify({ status: "error", message: "Shopify API error", httpStatus: getResp.status, response: getData }));
+          return;
+        }
+
         const themeContent = getData.asset.value;
 
         if (themeContent.indexOf(oldUrl) === -1) {
