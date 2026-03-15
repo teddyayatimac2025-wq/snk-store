@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Paiement - SNK Store</title>
+  <title>Paiement - Chez YouYou</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -11,100 +11,113 @@
       background: #f5f5f5;
       color: #1a1a1a;
       min-height: 100vh;
+    }
+    .checkout-page {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      min-height: 100vh;
+      flex-wrap: wrap;
     }
-    .checkout-container {
+    /* --- Colonne gauche : formulaire --- */
+    .checkout-left {
+      flex: 1;
+      min-width: 320px;
+      max-width: 680px;
+      padding: 40px 48px;
       background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      max-width: 500px;
-      width: 95%;
-      padding: 32px;
-      margin: 20px;
     }
-    .checkout-header {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .checkout-header h1 {
-      font-size: 22px;
+    .checkout-logo {
+      font-size: 20px;
       font-weight: 700;
-      margin-bottom: 4px;
+      margin-bottom: 32px;
+      color: #1a1a1a;
     }
-    .checkout-header p {
-      color: #666;
-      font-size: 14px;
+    .checkout-logo a { color: inherit; text-decoration: none; }
+    /* Etapes */
+    .steps { display: flex; gap: 8px; margin-bottom: 28px; font-size: 13px; color: #999; }
+    .steps .step { cursor: pointer; }
+    .steps .step.active { color: #1a1a1a; font-weight: 600; }
+    .steps .sep { color: #ccc; }
+    /* Sections */
+    .section { margin-bottom: 28px; }
+    .section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+    /* Formulaire */
+    .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .form-row.full { flex-direction: column; }
+    .form-group { flex: 1; display: flex; flex-direction: column; }
+    .form-group label { font-size: 13px; font-weight: 500; margin-bottom: 4px; color: #555; }
+    .form-group input, .form-group select {
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
     }
-    .order-summary {
-      background: #fafafa;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-      border: 1px solid #eee;
-    }
-    .order-summary h2 {
+    .form-group input:focus, .form-group select:focus { border-color: #1a1a1a; }
+    .form-group input.error, .form-group select.error { border-color: #d32f2f; }
+    .field-error { color: #d32f2f; font-size: 12px; margin-top: 2px; display: none; }
+    /* Boutons */
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
       font-size: 16px;
       font-weight: 600;
-      margin-bottom: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
     }
-    .cart-item {
+    .btn-primary:hover { background: #333; }
+    .btn-primary:disabled { background: #999; cursor: not-allowed; }
+    .btn-back {
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 12px;
+      font-family: inherit;
+    }
+    .btn-back:hover { color: #1a1a1a; }
+    /* --- Colonne droite : récap --- */
+    .checkout-right {
+      flex: 0 0 380px;
+      background: #fafafa;
+      border-left: 1px solid #eee;
+      padding: 40px 32px;
+    }
+    .summary-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+    .summary-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 0;
+      padding: 10px 0;
       border-bottom: 1px solid #eee;
       font-size: 14px;
     }
-    .cart-item:last-of-type { border-bottom: none; }
-    .cart-item .item-name { flex: 1; }
-    .cart-item .item-qty { color: #666; margin: 0 12px; }
-    .cart-item .item-price { font-weight: 600; }
-    .cart-total {
+    .summary-item:last-of-type { border-bottom: none; }
+    .summary-item .s-name { flex: 1; }
+    .summary-item .s-qty { color: #666; margin: 0 12px; font-size: 13px; }
+    .summary-item .s-price { font-weight: 600; }
+    .summary-total {
       display: flex;
       justify-content: space-between;
-      margin-top: 12px;
-      padding-top: 12px;
+      margin-top: 16px;
+      padding-top: 16px;
       border-top: 2px solid #1a1a1a;
       font-size: 18px;
       font-weight: 700;
     }
-    #paypal-buttons {
-      min-height: 50px;
-    }
-    .payment-section h2 {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-    .success-msg {
-      text-align: center;
-      padding: 40px 20px;
-    }
-    .success-msg .check {
-      width: 64px;
-      height: 64px;
-      background: #00c853;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      font-size: 32px;
-      color: #fff;
-    }
-    .success-msg h2 { font-size: 20px; margin-bottom: 8px; }
-    .success-msg p { color: #666; font-size: 14px; margin-bottom: 16px; }
-    .success-msg a {
-      display: inline-block;
-      background: #1a1a1a;
-      color: #fff;
-      padding: 12px 32px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 600;
-    }
+    /* PayPal */
+    #paypal-buttons { min-height: 50px; }
+    .payment-section { display: none; }
+    .payment-section.visible { display: block; }
+    /* Erreur */
     .error-msg {
       background: #fff3f3;
       color: #d32f2f;
@@ -114,110 +127,187 @@
       font-size: 14px;
       display: none;
     }
-    .empty-cart {
-      text-align: center;
-      padding: 40px 20px;
-      color: #666;
+    /* Succès */
+    .success-msg { text-align: center; padding: 40px 20px; display: none; }
+    .success-msg .check-icon {
+      width: 64px; height: 64px; background: #00c853; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px; font-size: 32px; color: #fff;
     }
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #666;
+    .success-msg h2 { font-size: 20px; margin-bottom: 8px; }
+    .success-msg p { color: #666; font-size: 14px; margin-bottom: 16px; }
+    .success-msg a {
+      display: inline-block; background: #1a1a1a; color: #fff;
+      padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;
     }
-    .secure-badge {
-      text-align: center;
-      margin-top: 16px;
-      font-size: 12px;
-      color: #999;
+    .secure-badge { text-align: center; margin-top: 20px; font-size: 12px; color: #999; }
+    /* Loading */
+    .loading { text-align: center; padding: 60px 20px; color: #666; }
+    .empty-cart { text-align: center; padding: 60px 20px; color: #666; }
+    /* Responsive */
+    @media (max-width: 768px) {
+      .checkout-page { flex-direction: column-reverse; }
+      .checkout-right { flex: none; width: 100%; border-left: none; border-bottom: 1px solid #eee; padding: 20px 16px; }
+      .checkout-left { padding: 20px 16px; max-width: 100%; }
+      .form-row { flex-direction: column; gap: 0; }
     }
   </style>
 </head>
 <body>
 
-<div class="checkout-container">
-  <!-- Loading -->
-  <div id="loading" class="loading">Chargement...</div>
+<!-- Loading -->
+<div id="loading" class="loading">Chargement...</div>
 
-  <!-- Panier vide -->
-  <div id="empty-cart" class="empty-cart" style="display:none;">
-    <h2>Panier vide</h2>
-    <p>Aucun article dans le panier.</p>
-  </div>
+<!-- Panier vide -->
+<div id="empty-cart" class="empty-cart" style="display:none;">
+  <h2>Panier vide</h2>
+  <p>Aucun article dans le panier.</p>
+</div>
 
-  <!-- Checkout principal -->
-  <div id="checkout-main" style="display:none;">
-    <div class="checkout-header">
-      <h1>Finaliser la commande</h1>
-      <p>Paiement sécurisé via PayPal</p>
+<!-- Checkout principal -->
+<div id="checkout-main" class="checkout-page" style="display:none;">
+  <!-- Colonne gauche -->
+  <div class="checkout-left">
+    <div class="checkout-logo"><a id="logo-link" href="#">Chez YouYou</a></div>
+
+    <div class="steps">
+      <span class="step active" id="step-info-label">Informations</span>
+      <span class="sep">&rsaquo;</span>
+      <span class="step" id="step-pay-label">Paiement</span>
     </div>
 
-    <div class="order-summary">
-      <h2>Récapitulatif</h2>
-      <div id="cart-items"></div>
-      <div class="cart-total">
-        <span>Total</span>
-        <span id="cart-total">0,00 EUR</span>
+    <!-- ÉTAPE 1 : Informations client -->
+    <div id="step-info" class="section">
+      <h2>Coordonnées</h2>
+      <div class="form-row full">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="votreemail@exemple.com" required>
+          <span class="field-error" id="err-email">Veuillez entrer un email valide</span>
+        </div>
       </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label for="phone">Téléphone</label>
+          <input type="tel" id="phone" placeholder="06 12 34 56 78">
+          <span class="field-error" id="err-phone">Veuillez entrer un numéro valide</span>
+        </div>
+      </div>
+
+      <h2 style="margin-top:24px;">Adresse de livraison</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstname">Prénom</label>
+          <input type="text" id="firstname" placeholder="Jean" required>
+          <span class="field-error" id="err-firstname">Champ requis</span>
+        </div>
+        <div class="form-group">
+          <label for="lastname">Nom</label>
+          <input type="text" id="lastname" placeholder="Dupont" required>
+          <span class="field-error" id="err-lastname">Champ requis</span>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label for="address">Adresse</label>
+          <input type="text" id="address" placeholder="12 rue de la Paix" required>
+          <span class="field-error" id="err-address">Champ requis</span>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label for="address2">Complément d'adresse (optionnel)</label>
+          <input type="text" id="address2" placeholder="Appartement, étage, bâtiment...">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">Ville</label>
+          <input type="text" id="city" placeholder="Paris" required>
+          <span class="field-error" id="err-city">Champ requis</span>
+        </div>
+        <div class="form-group">
+          <label for="zip">Code postal</label>
+          <input type="text" id="zip" placeholder="75001" required>
+          <span class="field-error" id="err-zip">Champ requis</span>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label for="country">Pays</label>
+          <select id="country">
+            <option value="FR" selected>France</option>
+            <option value="BE">Belgique</option>
+            <option value="CH">Suisse</option>
+            <option value="LU">Luxembourg</option>
+            <option value="MC">Monaco</option>
+            <option value="DE">Allemagne</option>
+            <option value="ES">Espagne</option>
+            <option value="IT">Italie</option>
+            <option value="NL">Pays-Bas</option>
+            <option value="PT">Portugal</option>
+            <option value="GB">Royaume-Uni</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-to-payment" type="button">Continuer vers le paiement</button>
     </div>
 
-    <div class="payment-section">
-      <h2>Mode de paiement</h2>
+    <!-- ÉTAPE 2 : Paiement -->
+    <div id="step-pay" class="payment-section">
+      <h2>Paiement</h2>
+      <div class="customer-recap" style="background:#fafafa;border-radius:8px;padding:14px;margin-bottom:20px;font-size:14px;">
+        <div style="margin-bottom:6px;"><strong>Contact :</strong> <span id="recap-email"></span></div>
+        <div style="margin-bottom:6px;"><strong>Livraison :</strong> <span id="recap-address"></span></div>
+      </div>
       <div id="error-msg" class="error-msg"></div>
       <div id="paypal-buttons"></div>
+      <div class="secure-badge">Paiement sécurisé par PayPal</div>
+      <button class="btn-back" id="btn-back-info" type="button">&larr; Revenir aux informations</button>
     </div>
 
-    <div class="secure-badge">
-      Paiement sécurisé par PayPal
+    <!-- Succès -->
+    <div id="success" class="success-msg">
+      <div class="check-icon">&#10003;</div>
+      <h2>Paiement confirmé !</h2>
+      <p>Votre commande a été enregistrée. Vous recevrez un email de confirmation.</p>
+      <a id="return-link" href="#">Retour à la boutique</a>
     </div>
   </div>
 
-  <!-- Succes -->
-  <div id="success" class="success-msg" style="display:none;">
-    <div class="check">&#10003;</div>
-    <h2>Paiement confirmé !</h2>
-    <p>Votre commande a été enregistrée. Vous recevrez un email de confirmation.</p>
-    <a id="return-link" href="#">Retour à la boutique</a>
+  <!-- Colonne droite : récap commande -->
+  <div class="checkout-right">
+    <div class="summary-title">Votre commande</div>
+    <div id="cart-items"></div>
+    <div class="summary-total">
+      <span>Total</span>
+      <span id="cart-total">0,00 EUR</span>
+    </div>
   </div>
 </div>
 
 <script>
-  // =============================================
-  // CHECKOUT - Recupere le panier depuis l'URL
-  // Format: /checkout?cart=BASE64_JSON&return_url=URL
-  // Ou bien depuis postMessage (iframe)
-  // =============================================
-
   const API_BASE = window.location.origin;
   let cart = [];
   let returnUrl = "";
+  let customerInfo = {};
 
-  // --- Lire les parametres URL ---
+  // --- Params URL ---
   function getParams() {
     const params = new URLSearchParams(window.location.search);
-
-    // Panier encode en base64
     const cartParam = params.get("cart");
     if (cartParam) {
-      try {
-        cart = JSON.parse(atob(cartParam));
-      } catch(e) {
-        console.error("Erreur decodage panier:", e);
-      }
+      try { cart = JSON.parse(atob(cartParam)); } catch(e) { console.error("Erreur décodage panier:", e); }
     }
-
-    // Panier en JSON direct (alternative)
     const itemsParam = params.get("items");
     if (!cart.length && itemsParam) {
-      try {
-        cart = JSON.parse(decodeURIComponent(itemsParam));
-      } catch(e) {}
+      try { cart = JSON.parse(decodeURIComponent(itemsParam)); } catch(e) {}
     }
-
-    // URL de retour apres paiement
     returnUrl = params.get("return_url") || params.get("return") || "";
   }
 
-  // --- Ecouter les messages postMessage (pour iframe) ---
+  // --- postMessage (iframe) ---
   window.addEventListener("message", function(event) {
     if (event.data && event.data.type === "checkout-cart") {
       cart = event.data.cart || [];
@@ -231,22 +321,19 @@
     const container = document.getElementById("cart-items");
     let total = 0;
     container.innerHTML = "";
-
     for (const item of cart) {
       const price = parseFloat(item.price) || 0;
       const qty = parseInt(item.quantity) || 1;
       const subtotal = price * qty;
       total += subtotal;
-
       const div = document.createElement("div");
-      div.className = "cart-item";
+      div.className = "summary-item";
       div.innerHTML =
-        '<span class="item-name">' + escapeHtml(item.name || item.title || "Produit") + '</span>' +
-        '<span class="item-qty">x' + qty + '</span>' +
-        '<span class="item-price">' + subtotal.toFixed(2) + ' &euro;</span>';
+        '<span class="s-name">' + escapeHtml(item.name || item.title || "Produit") + '</span>' +
+        '<span class="s-qty">x' + qty + '</span>' +
+        '<span class="s-price">' + subtotal.toFixed(2) + ' &euro;</span>';
       container.appendChild(div);
     }
-
     document.getElementById("cart-total").textContent = total.toFixed(2) + " EUR";
   }
 
@@ -255,17 +342,79 @@
     textarea.innerHTML = str;
     return textarea.value;
   }
-
   function escapeHtml(str) {
-    // D'abord decoder les entites HTML existantes (ex: &#39; de Shopify)
-    // puis re-encoder proprement pour eviter le double encodage
     const decoded = decodeHtmlEntities(str);
     const div = document.createElement("div");
     div.textContent = decoded;
     return div.innerHTML;
   }
 
-  // --- Charger PayPal SDK ---
+  // --- Validation formulaire ---
+  function validateInfo() {
+    let valid = true;
+    const fields = [
+      { id: "email", check: function(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); } },
+      { id: "firstname", check: function(v) { return v.trim().length > 0; } },
+      { id: "lastname", check: function(v) { return v.trim().length > 0; } },
+      { id: "address", check: function(v) { return v.trim().length > 0; } },
+      { id: "city", check: function(v) { return v.trim().length > 0; } },
+      { id: "zip", check: function(v) { return v.trim().length > 0; } }
+    ];
+    for (const f of fields) {
+      const input = document.getElementById(f.id);
+      const errEl = document.getElementById("err-" + f.id);
+      if (!f.check(input.value)) {
+        input.classList.add("error");
+        if (errEl) errEl.style.display = "block";
+        valid = false;
+      } else {
+        input.classList.remove("error");
+        if (errEl) errEl.style.display = "none";
+      }
+    }
+    return valid;
+  }
+
+  function getCustomerInfo() {
+    return {
+      email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      firstName: document.getElementById("firstname").value.trim(),
+      lastName: document.getElementById("lastname").value.trim(),
+      address1: document.getElementById("address").value.trim(),
+      address2: document.getElementById("address2").value.trim(),
+      city: document.getElementById("city").value.trim(),
+      zip: document.getElementById("zip").value.trim(),
+      country: document.getElementById("country").value
+    };
+  }
+
+  // --- Navigation étapes ---
+  document.getElementById("btn-to-payment").addEventListener("click", function() {
+    if (!validateInfo()) return;
+    customerInfo = getCustomerInfo();
+    // Recap
+    document.getElementById("recap-email").textContent = customerInfo.email;
+    var addrText = customerInfo.firstName + " " + customerInfo.lastName + ", " +
+      customerInfo.address1 + (customerInfo.address2 ? " " + customerInfo.address2 : "") + ", " +
+      customerInfo.zip + " " + customerInfo.city + ", " +
+      document.getElementById("country").options[document.getElementById("country").selectedIndex].text;
+    document.getElementById("recap-address").textContent = addrText;
+    // Changer étape
+    document.getElementById("step-info").style.display = "none";
+    document.getElementById("step-pay").classList.add("visible");
+    document.getElementById("step-info-label").classList.remove("active");
+    document.getElementById("step-pay-label").classList.add("active");
+  });
+
+  document.getElementById("btn-back-info").addEventListener("click", function() {
+    document.getElementById("step-pay").classList.remove("visible");
+    document.getElementById("step-info").style.display = "block";
+    document.getElementById("step-pay-label").classList.remove("active");
+    document.getElementById("step-info-label").classList.add("active");
+  });
+
+  // --- PayPal ---
   function loadPayPalSDK(clientId) {
     return new Promise(function(resolve, reject) {
       const script = document.createElement("script");
@@ -276,78 +425,61 @@
     });
   }
 
-  // --- Initialiser le checkout ---
   async function initCheckout() {
     document.getElementById("loading").style.display = "none";
-
     if (!cart.length) {
       document.getElementById("empty-cart").style.display = "block";
       return;
     }
-
-    document.getElementById("checkout-main").style.display = "block";
+    document.getElementById("checkout-main").style.display = "flex";
     renderCart();
-
     if (returnUrl) {
       document.getElementById("return-link").href = returnUrl;
+      document.getElementById("logo-link").href = returnUrl;
     }
 
-    // Charger config PayPal
     try {
       const configRes = await fetch(API_BASE + "/api/config");
       const config = await configRes.json();
-
       await loadPayPalSDK(config.clientId);
 
       paypal.Buttons({
         style: { layout: "vertical", shape: "rect", label: "pay" },
-
         createOrder: async function() {
           const res = await fetch(API_BASE + "/api/orders", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cart: cart })
+            body: JSON.stringify({ cart: cart, customer: customerInfo })
           });
           const order = await res.json();
           if (order.id) return order.id;
-          throw new Error(order.error || "Erreur creation commande");
+          throw new Error(order.error || "Erreur création commande");
         },
-
         onApprove: async function(data) {
           const res = await fetch(API_BASE + "/api/orders/" + data.orderID + "/capture", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cart: cart })
+            body: JSON.stringify({ cart: cart, customer: customerInfo })
           });
           const result = await res.json();
-
           if (result.status === "COMPLETED") {
-            document.getElementById("checkout-main").style.display = "none";
+            document.getElementById("step-pay").classList.remove("visible");
             document.getElementById("success").style.display = "block";
-
-            // Notifier le parent (si en iframe)
             if (window.parent !== window) {
-              window.parent.postMessage({
-                type: "checkout-success",
-                orderID: data.orderID,
-                status: "COMPLETED"
-              }, "*");
+              window.parent.postMessage({ type: "checkout-success", orderID: data.orderID, status: "COMPLETED" }, "*");
             }
           } else {
             showError("Le paiement n'a pas pu être finalisé. Veuillez réessayer.");
           }
         },
-
         onError: function(err) {
           console.error("PayPal error:", err);
           showError("Erreur de paiement. Veuillez réessayer.");
         },
-
         onCancel: function() {
           showError("Paiement annulé.");
         }
       }).render("#paypal-buttons");
-
     } catch(err) {
       console.error("Init error:", err);
       showError("Impossible de charger le système de paiement.");
@@ -361,7 +493,6 @@
     setTimeout(function() { el.style.display = "none"; }, 5000);
   }
 
-  // --- Demarrage ---
   getParams();
   initCheckout();
 </script>
