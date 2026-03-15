@@ -41,6 +41,9 @@ const PORT = process.env.PORT || 8080;
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN || "ketj31-fg.myshopify.com";
 const SHOPIFY_STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_TOKEN || "e4acaad2c247368ad594caae4c64643d";
 const SHOPIFY_API_VERSION = "2024-10";
+const SHOPIFY_ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_TOKEN || "";
+const SHOPIFY_CLIENT_ID = process.env.SHOPIFY_CLIENT_ID || "8517ef85c305a78b3067ee8d8a98697c";
+const SHOPIFY_CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET || "";
 
 // Sandbox ou Production
 // MODE LIVE ACTIVÃ
@@ -329,6 +332,76 @@ function readBody(req) {
   });
 }
 
+
+// ============================================================
+// SHOPIFY ADMIN API : Creer une commande dans Shopify
+// ============================================================
+async function createShopifyOrder(paypalCapture, cartItems) {
+  if (!SHOPIFY_ADMIN_TOKEN) {
+    console.log("SHOPIFY_ADMIN_TOKEN non configure - commande non creee dans Shopify");
+    return null;
+  }
+  try {
+    const lineItems = cartItems.map(item => ({
+      title: item.name || item.title || "Produit",
+      quantity: item.quantity || 1,
+      price: String(item.price || item.unit_amount || "0.00")
+    }));
+    const captureInfo = paypalCapture.purchase_units && paypalCapture.purchase_units[0] && paypalCapture.purchase_units[0].payments && paypalCapture.purchase_units[0].payments.captures && paypalCapture.purchase_units[0].payments.captures[0];
+    const captureAmount = captureInfo ? captureInfo.amount.value : "0.00";
+    const orderData = {
+      order: {
+        line_items: lineItems,
+        financial_status: "paid",
+        currency: "EUR",
+        tags: "paypal,headless",
+        note: "Commande PayPal #" + (paypalCapture.id || ""),
+        transactions: [{
+          kind: "capture",
+          status: "success",
+          amount: captureAmount,
+          gateway: "paypal"
+        }]
+      }
+    };
+    const shipping = paypalCapture.purchase_units && paypalCapture.purchase_units[0] && paypalCapture.purchase_units[0].shipping;
+    if (shipping) {
+      const fullName = (shipping.name && shipping.name.full_name) || "";
+      const parts = fullName.split(" ");
+      orderData.order.shipping_address = {
+        first_name: parts[0] || "",
+        last_name: parts.slice(1).join(" ") || "",
+        address1: (shipping.address && shipping.address.address_line_1) || "",
+        address2: (shipping.address && shipping.address.address_line_2) || "",
+        city: (shipping.address && shipping.address.admin_area_2) || "",
+        province: (shipping.address && shipping.address.admin_area_1) || "",
+        zip: (shipping.address && shipping.address.postal_code) || "",
+        country_code: (shipping.address && shipping.address.country_code) || "FR"
+      };
+    }
+    const payerEmail = paypalCapture.payer && paypalCapture.payer.email_address;
+    if (payerEmail) {
+      orderData.order.email = payerEmail;
+    }
+    const url = "https://" + SHOPIFY_STORE_DOMAIN + "/admin/api/" + SHOPIFY_API_VERSION + "/orders.json";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN },
+      body: JSON.stringify(orderData)
+    });
+    const result = await response.json();
+    if (response.ok) {
+      console.log("Commande Shopify creee: #" + ((result.order && result.order.order_number) || (result.order && result.order.id)));
+    } else {
+      console.error("Erreur creation commande Shopify:", JSON.stringify(result));
+    }
+    return result;
+  } catch (error) {
+    console.error("Erreur creation commande Shopify:", error.message);
+    return null;
+  }
+}
+
 // ============================================================
 // SERVEUR HTTP
 // ============================================================
@@ -347,7 +420,41 @@ const server = http.createServer(async (req, res) => {
   }
 
   try {
-    // ---- API: Config (fournir le Client ID au frontend) ----
+    // ---- OAuth Shopify Admin API ----
+      if (url === "/auth") {
+        const scopes = "write_orders,read_orders,write_inventory,read_inventory,read_products";
+        const redirectUri = (process.env.RENDER_EXTERNAL_URL || "https://snk-store.onrender.com") + "/auth/callback";
+        const authUrl = "https://" + SHOPIFY_STORE_DOMAIN + "/admin/oauth/authorize?client_id=" + SHOPIFY_CLIENT_ID + "&scope=" + scopes + "&redirect_uri=" + encodeURIComponent(redirectUri);
+        res.writeHead(302, { "Location": authUrl });
+        res.end();
+        return;
+      }
+
+      if (url.startsWith("/auth/callback")) {
+        const params = new URL(req.url, "http://localhost").searchParams;
+        const code = params.get("code");
+        if (!code) {
+          res.writeHead(400, { "Content-Type": "text/html" });
+          res.end("Erreur: pas de code");
+          return;
+        }
+        try {
+          const tokenResp = await fetch("https://" + SHOPIFY_STORE_DOMAIN + "/admin/oauth/access_token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ client_id: SHOPIFY_CLIENT_ID, client_secret: SHOPIFY_CLIENT_SECRET, code: code })
+          });
+          const tokenData = await tokenResp.json();
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end("<h1>Token obtenu avec succes!</h1><p>Ajoutez cette variable d environnement sur Render.com:</p><pre>SHOPIFY_ADMIN_TOKEN=" + (tokenData.access_token || "ERREUR") + "</pre><p>Scopes: " + (tokenData.scope || "N/A") + "</p>");
+        } catch(err) {
+          res.writeHead(500, { "Content-Type": "text/html" });
+          res.end("<h1>Erreur</h1><pre>" + err.message + "</pre>");
+        }
+        return;
+      }
+
+      // ---- API: Config (fournir le Client ID au frontend) ----
     if (url.pathname === "/api/config" && req.method === "GET") {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ clientId: PAYPAL_CLIENT_ID }));
@@ -432,6 +539,16 @@ const server = http.createServer(async (req, res) => {
     if (captureMatch && req.method === "POST") {
       const orderID = captureMatch[1];
       const result = await captureOrder(orderID);
+
+        // Creer la commande dans Shopify apres capture PayPal reussie
+        try {
+          const cData = JSON.parse(JSON.stringify(captureData || data));
+          if (cData && (cData.status === "COMPLETED" || (cData.purchase_units))) {
+            const cartForShopify = body.cart || body.items || [];
+            createShopifyOrder(cData, cartForShopify).catch(function(err) { console.error("Shopify order err:", err); });
+          }
+        } catch(shopifyErr) { console.error("Shopify sync error:", shopifyErr); }
+
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(result));
       return;
