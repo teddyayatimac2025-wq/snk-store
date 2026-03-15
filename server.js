@@ -1,6 +1,6 @@
 // ============================================================
-// SNK STORE - Serveur Node.js SANS dÃ©pendances externes
-// Fonctionne avec Node.js 18+ (fetch intÃ©grÃ©)
+// SNK STORE - Serveur Node.js SANS dÃÂ©pendances externes
+// Fonctionne avec Node.js 18+ (fetch intÃÂ©grÃÂ©)
 // ============================================================
 
 import http from "http";
@@ -28,7 +28,7 @@ function loadEnv() {
       if (!process.env[key]) process.env[key] = value;
     }
   } catch (e) {
-    console.warn("Fichier .env non trouvÃ©, utilisation des variables d'environnement systÃ¨me.");
+    console.warn("Fichier .env non trouvÃÂ©, utilisation des variables d'environnement systÃÂ¨me.");
   }
 }
 loadEnv();
@@ -46,7 +46,7 @@ const SHOPIFY_CLIENT_ID = process.env.SHOPIFY_CLIENT_ID || "8517ef85c305a78b3067
 const SHOPIFY_CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET || "";
 
 // Sandbox ou Production
-// MODE LIVE ACTIVÃ
+// MODE LIVE ACTIVÃÂ
 const PAYPAL_BASE_URL = "https://api-m.paypal.com";
 
 // ============================================================
@@ -72,7 +72,7 @@ async function getPayPalAccessToken() {
 }
 
 // ============================================================
-// PAYPAL API : CrÃ©er une commande
+// PAYPAL API : CrÃÂ©er une commande
 // ============================================================
 async function createOrder(cartItems) {
   const accessToken = await getPayPalAccessToken();
@@ -123,7 +123,7 @@ async function createOrder(cartItems) {
     throw new Error(`PayPal Create Order Error: ${JSON.stringify(data)}`);
   }
 
-  console.log(`â Commande crÃ©Ã©e: ${data.id}`);
+  console.log(`Ã¢ÂÂ Commande crÃÂ©ÃÂ©e: ${data.id}`);
   return data;
 }
 
@@ -147,12 +147,12 @@ async function captureOrder(orderID) {
     throw new Error(`PayPal Capture Error: ${JSON.stringify(data)}`);
   }
 
-  console.log(`ð° Paiement capturÃ©: ${data.id} - Status: ${data.status}`);
+  console.log(`Ã°ÂÂÂ° Paiement capturÃÂ©: ${data.id} - Status: ${data.status}`);
   return data;
 }
 
 // ============================================================
-// SHOPIFY STOREFRONT API : RequÃªte GraphQL
+// SHOPIFY STOREFRONT API : RequÃÂªte GraphQL
 // ============================================================
 async function shopifyStorefrontQuery(query, variables = {}) {
   const response = await fetch(
@@ -176,7 +176,7 @@ async function shopifyStorefrontQuery(query, variables = {}) {
 }
 
 // ============================================================
-// SHOPIFY : RÃ©cupÃ©rer les produits
+// SHOPIFY : RÃÂ©cupÃÂ©rer les produits
 // ============================================================
 async function getProducts(first = 20) {
   const query = `
@@ -240,7 +240,7 @@ async function getProducts(first = 20) {
 }
 
 // ============================================================
-// SHOPIFY : RÃ©cupÃ©rer un produit par handle
+// SHOPIFY : RÃÂ©cupÃÂ©rer un produit par handle
 // ============================================================
 async function getProductByHandle(handle) {
   const query = `
@@ -315,7 +315,7 @@ const MIME_TYPES = {
 };
 
 // ============================================================
-// Lire le body d'une requÃªte POST
+// Lire le body d'une requÃÂªte POST
 // ============================================================
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -461,7 +461,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // ---- API: RÃ©cupÃ©rer les produits Shopify ----
+    // ---- API: RÃÂ©cupÃÂ©rer les produits Shopify ----
     if (url.pathname === "/api/products" && req.method === "GET") {
       const data = await getProducts();
       const products = data.products.edges.map((edge) => {
@@ -490,14 +490,14 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // ---- API: RÃ©cupÃ©rer un produit par handle ----
+    // ---- API: RÃÂ©cupÃÂ©rer un produit par handle ----
     const productMatch = url.pathname.match(/^\/api\/products\/([^/]+)$/);
     if (productMatch && req.method === "GET") {
       const handle = productMatch[1];
       const data = await getProductByHandle(handle);
       if (!data.product) {
         res.writeHead(404, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Produit non trouvÃ©" }));
+        res.end(JSON.stringify({ error: "Produit non trouvÃÂ©" }));
         return;
       }
       const p = data.product;
@@ -525,7 +525,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // ---- API: CrÃ©er une commande PayPal ----
+    // ---- API: CrÃÂ©er une commande PayPal ----
     if (url.pathname === "/api/orders" && req.method === "POST") {
       const body = await readBody(req);
       const result = await createOrder(body.cart);
@@ -542,7 +542,7 @@ const server = http.createServer(async (req, res) => {
 
         // Creer la commande dans Shopify apres capture PayPal reussie
         try {
-          const cData = JSON.parse(JSON.stringify(captureData || data));
+          const cData = JSON.parse(JSON.stringify(data));
           if (cData && (cData.status === "COMPLETED" || (cData.purchase_units))) {
             const cartForShopify = body.cart || body.items || [];
             createShopifyOrder(cData, cartForShopify).catch(function(err) { console.error("Shopify order err:", err); });
@@ -569,7 +569,7 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { "Content-Type": contentType });
     res.end(content);
   } catch (error) {
-    console.error("â Erreur:", error.message);
+    console.error("Ã¢ÂÂ Erreur:", error.message);
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: error.message }));
   }
@@ -577,14 +577,14 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`
-ââââââââââââââââââââââââââââââââââââââââââââââââ
-â                                              â
-â   ð  SNK Store est lancÃ© !                 â
-â                                              â
-â   â http://localhost:${PORT}/                  â
-â                                              â
-â   Mode: ${PAYPAL_BASE_URL.includes("sandbox") ? "SANDBOX (test)" : "PRODUCTION (live)"}                  â
-â                                              â
-ââââââââââââââââââââââââââââââââââââââââââââââââ
+Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+Ã¢ÂÂ                                              Ã¢ÂÂ
+Ã¢ÂÂ   Ã°ÂÂÂ  SNK Store est lancÃÂ© !                 Ã¢ÂÂ
+Ã¢ÂÂ                                              Ã¢ÂÂ
+Ã¢ÂÂ   Ã¢ÂÂ http://localhost:${PORT}/                  Ã¢ÂÂ
+Ã¢ÂÂ                                              Ã¢ÂÂ
+Ã¢ÂÂ   Mode: ${PAYPAL_BASE_URL.includes("sandbox") ? "SANDBOX (test)" : "PRODUCTION (live)"}                  Ã¢ÂÂ
+Ã¢ÂÂ                                              Ã¢ÂÂ
+Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
   `);
 });
