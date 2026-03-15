@@ -1,6 +1,6 @@
 // ============================================================
-// SNK STORE - Serveur Node.js SANS dÃÂÃÂ©pendances externes
-// Fonctionne avec Node.js 18+ (fetch intÃÂÃÂ©grÃÂÃÂ©)
+// SNK STORE - Serveur Node.js SANS dÃÂÃÂÃÂÃÂ©pendances externes
+// Fonctionne avec Node.js 18+ (fetch intÃÂÃÂÃÂÃÂ©grÃÂÃÂÃÂÃÂ©)
 // ============================================================
 
 import http from "http";
@@ -28,7 +28,7 @@ function loadEnv() {
       if (!process.env[key]) process.env[key] = value;
     }
   } catch (e) {
-    console.warn("Fichier .env non trouvÃÂÃÂ©, utilisation des variables d'environnement systÃÂÃÂ¨me.");
+    console.warn("Fichier .env non trouvÃÂÃÂÃÂÃÂ©, utilisation des variables d'environnement systÃÂÃÂÃÂÃÂ¨me.");
   }
 }
 loadEnv();
@@ -46,7 +46,7 @@ const SHOPIFY_CLIENT_ID = process.env.SHOPIFY_CLIENT_ID || "8517ef85c305a78b3067
 const SHOPIFY_CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET || "";
 
 // Sandbox ou Production
-// MODE LIVE ACTIVÃÂÃÂ
+// MODE LIVE ACTIVÃÂÃÂÃÂÃÂ
 const PAYPAL_BASE_URL = "https://api-m.paypal.com";
 
 // ============================================================
@@ -72,7 +72,7 @@ async function getPayPalAccessToken() {
 }
 
 // ============================================================
-// PAYPAL API : CrÃÂÃÂ©er une commande
+// PAYPAL API : CrÃÂÃÂÃÂÃÂ©er une commande
 // ============================================================
 async function createOrder(cartItems) {
   const accessToken = await getPayPalAccessToken();
@@ -123,7 +123,7 @@ async function createOrder(cartItems) {
     throw new Error(`PayPal Create Order Error: ${JSON.stringify(data)}`);
   }
 
-  console.log(`ÃÂ¢ÃÂÃÂ Commande crÃÂÃÂ©ÃÂÃÂ©e: ${data.id}`);
+  console.log(`ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Commande crÃÂÃÂÃÂÃÂ©ÃÂÃÂÃÂÃÂ©e: ${data.id}`);
   return data;
 }
 
@@ -147,12 +147,12 @@ async function captureOrder(orderID) {
     throw new Error(`PayPal Capture Error: ${JSON.stringify(data)}`);
   }
 
-  console.log(`ÃÂ°ÃÂÃÂÃÂ° Paiement capturÃÂÃÂ©: ${data.id} - Status: ${data.status}`);
+  console.log(`ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ° Paiement capturÃÂÃÂÃÂÃÂ©: ${data.id} - Status: ${data.status}`);
   return data;
 }
 
 // ============================================================
-// SHOPIFY STOREFRONT API : RequÃÂÃÂªte GraphQL
+// SHOPIFY STOREFRONT API : RequÃÂÃÂÃÂÃÂªte GraphQL
 // ============================================================
 async function shopifyStorefrontQuery(query, variables = {}) {
   const response = await fetch(
@@ -176,7 +176,7 @@ async function shopifyStorefrontQuery(query, variables = {}) {
 }
 
 // ============================================================
-// SHOPIFY : RÃÂÃÂ©cupÃÂÃÂ©rer les produits
+// SHOPIFY : RÃÂÃÂÃÂÃÂ©cupÃÂÃÂÃÂÃÂ©rer les produits
 // ============================================================
 async function getProducts(first = 20) {
   const query = `
@@ -240,7 +240,7 @@ async function getProducts(first = 20) {
 }
 
 // ============================================================
-// SHOPIFY : RÃÂÃÂ©cupÃÂÃÂ©rer un produit par handle
+// SHOPIFY : RÃÂÃÂÃÂÃÂ©cupÃÂÃÂÃÂÃÂ©rer un produit par handle
 // ============================================================
 async function getProductByHandle(handle) {
   const query = `
@@ -315,7 +315,7 @@ const MIME_TYPES = {
 };
 
 // ============================================================
-// Lire le body d'une requÃÂÃÂªte POST
+// Lire le body d'une requÃÂÃÂÃÂÃÂªte POST
 // ============================================================
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -461,7 +461,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // ---- API: RÃÂÃÂ©cupÃÂÃÂ©rer les produits Shopify ----
+    // ---- API: RÃÂÃÂÃÂÃÂ©cupÃÂÃÂÃÂÃÂ©rer les produits Shopify ----
     if (url.pathname === "/api/products" && req.method === "GET") {
       const data = await getProducts();
       const products = data.products.edges.map((edge) => {
@@ -490,14 +490,14 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // ---- API: RÃÂÃÂ©cupÃÂÃÂ©rer un produit par handle ----
+    // ---- API: RÃÂÃÂÃÂÃÂ©cupÃÂÃÂÃÂÃÂ©rer un produit par handle ----
     const productMatch = url.pathname.match(/^\/api\/products\/([^/]+)$/);
     if (productMatch && req.method === "GET") {
       const handle = productMatch[1];
       const data = await getProductByHandle(handle);
       if (!data.product) {
         res.writeHead(404, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Produit non trouvÃÂÃÂ©" }));
+        res.end(JSON.stringify({ error: "Produit non trouvÃÂÃÂÃÂÃÂ©" }));
         return;
       }
       const p = data.product;
@@ -525,7 +525,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // ---- API: CrÃÂÃÂ©er une commande PayPal ----
+    // ---- API: CrÃÂÃÂÃÂÃÂ©er une commande PayPal ----
     if (url.pathname === "/api/orders" && req.method === "POST") {
       const body = await readBody(req);
       const result = await createOrder(body.cart);
@@ -554,6 +554,23 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    
+    // ---- TEST: Creer une commande Shopify sans PayPal -----
+    if (url.pathname === "/api/test-shopify" && req.method === "GET") {
+      try {
+        const testResult = await createShopifyOrder(
+          { id: "TEST-ORDER-001", status: "COMPLETED", purchase_units: [{ payments: { captures: [{ amount: { value: "0.50", currency_code: "EUR" } }] } }] },
+          [{ name: "TEST Gazelle Indoor", quantity: 1, price: "0.50" }]
+        );
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: true, shopifyOrder: testResult }));
+      } catch(e) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: false, error: e.message }));
+      }
+      return;
+    }
+
     // ---- Fichiers statiques ----
     let filePath = path.join(__dirname, "src", url.pathname === "/" ? "index.html" : url.pathname);
 
@@ -569,7 +586,7 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { "Content-Type": contentType });
     res.end(content);
   } catch (error) {
-    console.error("ÃÂ¢ÃÂÃÂ Erreur:", error.message);
+    console.error("ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Erreur:", error.message);
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: error.message }));
   }
@@ -577,14 +594,14 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`
-ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ                                              ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ   ÃÂ°ÃÂÃÂÃÂ  SNK Store est lancÃÂÃÂ© !                 ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ                                              ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ   ÃÂ¢ÃÂÃÂ http://localhost:${PORT}/                  ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ                                              ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ   Mode: ${PAYPAL_BASE_URL.includes("sandbox") ? "SANDBOX (test)" : "PRODUCTION (live)"}                  ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂ                                              ÃÂ¢ÃÂÃÂ
-ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ                                              ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ   ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ  SNK Store est lancÃÂÃÂÃÂÃÂ© !                 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ                                              ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ   ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ http://localhost:${PORT}/                  ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ                                              ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ   Mode: ${PAYPAL_BASE_URL.includes("sandbox") ? "SANDBOX (test)" : "PRODUCTION (live)"}                  ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ                                              ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
   `);
 });
