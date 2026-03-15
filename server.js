@@ -39,8 +39,8 @@ const PORT = process.env.PORT || 8080;
 
 // Shopify Storefront API
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN || "ketj31-fg.myshopify.com";
-const SHOPIFY_STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_TOKEN || "8517ef85c305a78b3067ee8d8a98697c";
-const SHOPIFY_API_VERSION = "2026-01";
+const SHOPIFY_STOREFRONT_TOKEN = process.env.SHOPIFY_STOREFRONT_TOKEN || "e4acaad2c247368ad594caae4c64643d";
+const SHOPIFY_API_VERSION = "2024-10";
 
 // Sandbox ou Production
 // MODE LIVE ACTIVÃ
