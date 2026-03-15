@@ -198,7 +198,7 @@ async function createShopifyOrder(paypalCapture, cartItems, customerData) {
     }
     if (email) orderData.order.email = email;
     if (phone) orderData.order.phone = phone;
-    // CrÃÂÃÂ©er le client dans Shopify
+    // CrÃÂÃÂÃÂÃÂ©er le client dans Shopify
     if (email || (customerData && customerData.firstName)) {
       orderData.order.customer = {
         first_name: (customerData && customerData.firstName) || "",
@@ -315,34 +315,6 @@ const server = http.createServer(async function(req, res) {
         res.end(html);
         return;
       }
-    }
-
-    // === TEMP: update theme URL ===
-    if (req.method === "POST" && url.pathname === "/api/update-theme") {
-      try {
-        const body = await readBody(req);
-        const parsed = typeof body === "string" ? JSON.parse(body) : body;
-        const oldUrl = parsed.oldUrl;
-        const newUrl = parsed.newUrl;
-        const shopUrl = "https://" + SHOPIFY_STORE_DOMAIN + "/admin/api/" + SHOPIFY_API_VERSION + "/themes/182586704201/assets.json";
-        const themeResp = await fetch(shopUrl + "?asset%5Bkey%5D=layout/theme.liquid", {
-          headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN }
-        });
-        const themeData = await themeResp.json();
-        const val = themeData.asset.value;
-        const updated = val.split(oldUrl).join(newUrl);
-        const putResp = await fetch(shopUrl, {
-          method: "PUT",
-          headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN, "Content-Type": "application/json" },
-          body: JSON.stringify({ asset: { key: "layout/theme.liquid", value: updated } })
-        });
-        res.writeHead(200, { ...corsHeaders, "Content-Type": "application/json" });
-        res.end(JSON.stringify({ ok: putResp.ok, changed: val !== updated }));
-      } catch (err) {
-        res.writeHead(500, { ...corsHeaders, "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: err.message }));
-      }
-      return;
     }
 
     // ---- Health check -----
