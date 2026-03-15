@@ -109,7 +109,7 @@ async function capturePayPalOrder(orderID) {
 }
 
 // ---- Shopify: Creer la commande -----
-async function createShopifyOrder(paypalCapture, cartItems) {
+async function createShopifyOrder(paypalCapture, cartItems, customerData) {
   if (!SHOPIFY_ADMIN_TOKEN) {
     console.log("SHOPIFY_ADMIN_TOKEN non configure - commande non creee dans Shopify");
     return null;
@@ -132,30 +132,48 @@ async function createShopifyOrder(paypalCapture, cartItems) {
       try { captureAmount = paypalCapture.purchase_units[0].amount.value; } catch(e2) {}
     }
 
-    // Info client depuis PayPal
+    // Info client depuis le formulaire checkout (prioritaire) ou PayPal (fallback)
     let shipping = null;
     let email = null;
-    try {
-      const pu = paypalCapture.purchase_units[0];
-      if (pu.shipping && pu.shipping.address) {
-        const addr = pu.shipping.address;
-        const nameParts = (pu.shipping.name && pu.shipping.name.full_name) ? pu.shipping.name.full_name.split(" ") : ["Client"];
-        shipping = {
-          first_name: nameParts[0] || "Client",
-          last_name: nameParts.slice(1).join(" ") || "",
-          address1: addr.address_line_1 || "",
-          address2: addr.address_line_2 || "",
-          city: addr.admin_area_2 || "",
-          province: addr.admin_area_1 || "",
-          zip: addr.postal_code || "",
-          country_code: addr.country_code || "FR"
-        };
-      }
-    } catch(e) {}
+    let phone = null;
 
-    try {
-      email = paypalCapture.payer && paypalCapture.payer.email_address;
-    } catch(e) {}
+    if (customerData && customerData.firstName) {
+      // Infos du formulaire checkout
+      shipping = {
+        first_name: customerData.firstName || "",
+        last_name: customerData.lastName || "",
+        address1: customerData.address1 || "",
+        address2: customerData.address2 || "",
+        city: customerData.city || "",
+        zip: customerData.zip || "",
+        country_code: customerData.country || "FR",
+        phone: customerData.phone || ""
+      };
+      email = customerData.email || null;
+      phone = customerData.phone || null;
+    } else {
+      // Fallback: infos PayPal
+      try {
+        const pu = paypalCapture.purchase_units[0];
+        if (pu.shipping && pu.shipping.address) {
+          const addr = pu.shipping.address;
+          const nameParts = (pu.shipping.name && pu.shipping.name.full_name) ? pu.shipping.name.full_name.split(" ") : ["Client"];
+          shipping = {
+            first_name: nameParts[0] || "Client",
+            last_name: nameParts.slice(1).join(" ") || "",
+            address1: addr.address_line_1 || "",
+            address2: addr.address_line_2 || "",
+            city: addr.admin_area_2 || "",
+            province: addr.admin_area_1 || "",
+            zip: addr.postal_code || "",
+            country_code: addr.country_code || "FR"
+          };
+        }
+      } catch(e) {}
+      try {
+        email = paypalCapture.payer && paypalCapture.payer.email_address;
+      } catch(e) {}
+    }
 
     const orderData = {
       order: {
@@ -173,8 +191,22 @@ async function createShopifyOrder(paypalCapture, cartItems) {
       }
     };
 
-    if (shipping) orderData.order.shipping_address = shipping;
+    if (shipping) {
+      orderData.order.shipping_address = shipping;
+      // Copier aussi en billing_address
+      orderData.order.billing_address = shipping;
+    }
     if (email) orderData.order.email = email;
+    if (phone) orderData.order.phone = phone;
+    // Créer le client dans Shopify
+    if (email || (customerData && customerData.firstName)) {
+      orderData.order.customer = {
+        first_name: (customerData && customerData.firstName) || "",
+        last_name: (customerData && customerData.lastName) || "",
+        email: email || ""
+      };
+      if (phone) orderData.order.customer.phone = phone;
+    }
 
     const shopifyUrl = "https://" + SHOPIFY_STORE_DOMAIN + "/admin/api/" + SHOPIFY_API_VERSION + "/orders.json";
     const response = await fetch(shopifyUrl, {
@@ -260,7 +292,8 @@ const server = http.createServer(async function(req, res) {
       try {
         if (result && (result.status === "COMPLETED" || result.purchase_units)) {
           const cartForShopify = body.cart || body.items || [];
-          createShopifyOrder(result, cartForShopify).catch(function(err) {
+          const customerForShopify = body.customer || {};
+          createShopifyOrder(result, cartForShopify, customerForShopify).catch(function(err) {
             console.error("Shopify order err:", err);
           });
         }
