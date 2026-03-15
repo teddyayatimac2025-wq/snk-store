@@ -198,7 +198,7 @@ async function createShopifyOrder(paypalCapture, cartItems, customerData) {
     }
     if (email) orderData.order.email = email;
     if (phone) orderData.order.phone = phone;
-    // CrÃ©er le client dans Shopify
+    // CrÃÂ©er le client dans Shopify
     if (email || (customerData && customerData.firstName)) {
       orderData.order.customer = {
         first_name: (customerData && customerData.firstName) || "",
@@ -317,23 +317,26 @@ const server = http.createServer(async function(req, res) {
       }
     }
 
-    // ---- Health check -----
     // === TEMP: update theme URL ===
     if (req.method === "POST" && url.pathname === "/api/update-theme") {
       try {
         const body = await readBody(req);
-        const { oldUrl, newUrl } = JSON.parse(body);
-        const themeResp = await fetch(
-          `https://${SHOPIFY_STORE_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/themes/182586704201/assets.json?asset%5Bkey%5D=layout/theme.liquid`,
-          { headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN } }
-        );
+        const bodyStr = typeof body === "string" ? body : body.toString();
+        const parsed = JSON.parse(bodyStr);
+        const oldUrl = parsed.oldUrl;
+        const newUrl = parsed.newUrl;
+        const shopUrl = "https://" + SHOPIFY_STORE_DOMAIN + "/admin/api/" + SHOPIFY_API_VERSION + "/themes/182586704201/assets.json";
+        const themeResp = await fetch(shopUrl + "?asset%5Bkey%5D=layout/theme.liquid", {
+          headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN }
+        });
         const themeData = await themeResp.json();
         const val = themeData.asset.value;
-        const updated = val.replaceAll(oldUrl, newUrl);
-        const putResp = await fetch(
-          `https://${SHOPIFY_STORE_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/themes/182586704201/assets.json`,
-          { method: "PUT", headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN, "Content-Type": "application/json" }, body: JSON.stringify({ asset: { key: "layout/theme.liquid", value: updated } }) }
-        );
+        const updated = val.split(oldUrl).join(newUrl);
+        const putResp = await fetch(shopUrl, {
+          method: "PUT",
+          headers: { "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN, "Content-Type": "application/json" },
+          body: JSON.stringify({ asset: { key: "layout/theme.liquid", value: updated } })
+        });
         res.writeHead(200, { ...corsHeaders, "Content-Type": "application/json" });
         res.end(JSON.stringify({ ok: putResp.ok, changed: val !== updated }));
       } catch (err) {
@@ -343,6 +346,7 @@ const server = http.createServer(async function(req, res) {
       return;
     }
 
+    // ---- Health check -----
 
     if (url.pathname === "/health") {
       res.writeHead(200, { ...corsHeaders, "Content-Type": "application/json" });
