@@ -421,7 +421,7 @@ const server = http.createServer(async (req, res) => {
 
   try {
     // ---- OAuth Shopify Admin API ----
-      if (url === "/auth") {
+      if (url.pathname === "/auth") {
         const scopes = "write_orders,read_orders,write_inventory,read_inventory,read_products";
         const redirectUri = (process.env.RENDER_EXTERNAL_URL || "https://snk-store.onrender.com") + "/auth/callback";
         const authUrl = "https://" + SHOPIFY_STORE_DOMAIN + "/admin/oauth/authorize?client_id=" + SHOPIFY_CLIENT_ID + "&scope=" + scopes + "&redirect_uri=" + encodeURIComponent(redirectUri);
@@ -430,8 +430,8 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      if (url.startsWith("/auth/callback")) {
-        const params = new URL(req.url, "http://localhost").searchParams;
+      if (url.pathname.startsWith("/auth/callback")) {
+        const params = url.searchParams;
         const code = params.get("code");
         if (!code) {
           res.writeHead(400, { "Content-Type": "text/html" });
