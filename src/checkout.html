@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paiement - SNK Store</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .checkout-container {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      max-width: 500px;
+      width: 95%;
+      padding: 32px;
+      margin: 20px;
+    }
+    .checkout-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .checkout-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .checkout-header p {
+      color: #666;
+      font-size: 14px;
+    }
+    .order-summary {
+      background: #fafafa;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      border: 1px solid #eee;
+    }
+    .order-summary h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+    .cart-item:last-of-type { border-bottom: none; }
+    .cart-item .item-name { flex: 1; }
+    .cart-item .item-qty { color: #666; margin: 0 12px; }
+    .cart-item .item-price { font-weight: 600; }
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 2px solid #1a1a1a;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    #paypal-buttons {
+      min-height: 50px;
+    }
+    .payment-section h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .success-msg {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .success-msg .check {
+      width: 64px;
+      height: 64px;
+      background: #00c853;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 32px;
+      color: #fff;
+    }
+    .success-msg h2 { font-size: 20px; margin-bottom: 8px; }
+    .success-msg p { color: #666; font-size: 14px; margin-bottom: 16px; }
+    .success-msg a {
+      display: inline-block;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 12px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .error-msg {
+      background: #fff3f3;
+      color: #d32f2f;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+    .empty-cart {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    .secure-badge {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 12px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+
+<div class="checkout-container">
+  <!-- Loading -->
+  <div id="loading" class="loading">Chargement...</div>
+
+  <!-- Panier vide -->
+  <div id="empty-cart" class="empty-cart" style="display:none;">
+    <h2>Panier vide</h2>
+    <p>Aucun article dans le panier.</p>
+  </div>
+
+  <!-- Checkout principal -->
+  <div id="checkout-main" style="display:none;">
+    <div class="checkout-header">
+      <h1>Finaliser la commande</h1>
+      <p>Paiement securise via PayPal</p>
+    </div>
+
+    <div class="order-summary">
+      <h2>Recapitulatif</h2>
+      <div id="cart-items"></div>
+      <div class="cart-total">
+        <span>Total</span>
+        <span id="cart-total">0,00 EUR</span>
+      </div>
+    </div>
+
+    <div class="payment-section">
+      <h2>Mode de paiement</h2>
+      <div id="error-msg" class="error-msg"></div>
+      <div id="paypal-buttons"></div>
+    </div>
+
+    <div class="secure-badge">
+      Paiement securise par PayPal
+    </div>
+  </div>
+
+  <!-- Succes -->
+  <div id="success" class="success-msg" style="display:none;">
+    <div class="check">&#10003;</div>
+    <h2>Paiement confirme !</h2>
+    <p>Votre commande a ete enregistree. Vous recevrez un email de confirmation.</p>
+    <a id="return-link" href="#">Retour a la boutique</a>
+  </div>
+</div>
+
+<script>
+  // =============================================
+  // CHECKOUT - Recupere le panier depuis l'URL
+  // Format: /checkout?cart=BASE64_JSON&return_url=URL
+  // Ou bien depuis postMessage (iframe)
+  // =============================================
+
+  const API_BASE = window.location.origin;
+  let cart = [];
+  let returnUrl = "";
+
+  // --- Lire les parametres URL ---
+  function getParams() {
+    const params = new URLSearchParams(window.location.search);
+
+    // Panier encode en base64
+    const cartParam = params.get("cart");
+    if (cartParam) {
+      try {
+        cart = JSON.parse(atob(cartParam));
+      } catch(e) {
+        console.error("Erreur decodage panier:", e);
+      }
+    }
+
+    // Panier en JSON direct (alternative)
+    const itemsParam = params.get("items");
+    if (!cart.length && itemsParam) {
+      try {
+        cart = JSON.parse(decodeURIComponent(itemsParam));
+      } catch(e) {}
+    }
+
+    // URL de retour apres paiement
+    returnUrl = params.get("return_url") || params.get("return") || "";
+  }
+
+  // --- Ecouter les messages postMessage (pour iframe) ---
+  window.addEventListener("message", function(event) {
+    if (event.data && event.data.type === "checkout-cart") {
+      cart = event.data.cart || [];
+      returnUrl = event.data.return_url || returnUrl;
+      if (cart.length) initCheckout();
+    }
+  });
+
+  // --- Afficher le panier ---
+  function renderCart() {
+    const container = document.getElementById("cart-items");
+    let total = 0;
+    container.innerHTML = "";
+
+    for (const item of cart) {
+      const price = parseFloat(item.price) || 0;
+      const qty = parseInt(item.quantity) || 1;
+      const subtotal = price * qty;
+      total += subtotal;
+
+      const div = document.createElement("div");
+      div.className = "cart-item";
+      div.innerHTML =
+        '<span class="item-name">' + escapeHtml(item.name || item.title || "Produit") + '</span>' +
+        '<span class="item-qty">x' + qty + '</span>' +
+        '<span class="item-price">' + subtotal.toFixed(2) + ' &euro;</span>';
+      container.appendChild(div);
+    }
+
+    document.getElementById("cart-total").textContent = total.toFixed(2) + " EUR";
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // --- Charger PayPal SDK ---
+  function loadPayPalSDK(clientId) {
+    return new Promise(function(resolve, reject) {
+      const script = document.createElement("script");
+      script.src = "https://www.paypal.com/sdk/js?client-id=" + clientId + "&currency=EUR&intent=capture";
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  // --- Initialiser le checkout ---
+  async function initCheckout() {
+    document.getElementById("loading").style.display = "none";
+
+    if (!cart.length) {
+      document.getElementById("empty-cart").style.display = "block";
+      return;
+    }
+
+    document.getElementById("checkout-main").style.display = "block";
+    renderCart();
+
+    if (returnUrl) {
+      document.getElementById("return-link").href = returnUrl;
+    }
+
+    // Charger config PayPal
+    try {
+      const configRes = await fetch(API_BASE + "/api/config");
+      const config = await configRes.json();
+
+      await loadPayPalSDK(config.clientId);
+
+      paypal.Buttons({
+        style: { layout: "vertical", shape: "rect", label: "pay" },
+
+        createOrder: async function() {
+          const res = await fetch(API_BASE + "/api/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cart: cart })
+          });
+          const order = await res.json();
+          if (order.id) return order.id;
+          throw new Error(order.error || "Erreur creation commande");
+        },
+
+        onApprove: async function(data) {
+          const res = await fetch(API_BASE + "/api/orders/" + data.orderID + "/capture", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cart: cart })
+          });
+          const result = await res.json();
+
+          if (result.status === "COMPLETED") {
+            document.getElementById("checkout-main").style.display = "none";
+            document.getElementById("success").style.display = "block";
+
+            // Notifier le parent (si en iframe)
+            if (window.parent !== window) {
+              window.parent.postMessage({
+                type: "checkout-success",
+                orderID: data.orderID,
+                status: "COMPLETED"
+              }, "*");
+            }
+          } else {
+            showError("Le paiement n'a pas pu etre finalise. Veuillez reessayer.");
+          }
+        },
+
+        onError: function(err) {
+          console.error("PayPal error:", err);
+          showError("Erreur de paiement. Veuillez reessayer.");
+        },
+
+        onCancel: function() {
+          showError("Paiement annule.");
+        }
+      }).render("#paypal-buttons");
+
+    } catch(err) {
+      console.error("Init error:", err);
+      showError("Impossible de charger le systeme de paiement.");
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById("error-msg");
+    el.textContent = msg;
+    el.style.display = "block";
+    setTimeout(function() { el.style.display = "none"; }, 5000);
+  }
+
+  // --- Demarrage ---
+  getParams();
+  initCheckout();
+</script>
+
+</body>
+</html>
