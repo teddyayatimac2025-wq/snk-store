@@ -1221,9 +1221,9 @@
             }
 
             const script = document.createElement('script');
-            script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&components=buttons,applepay,googlepay&buyer-country=FR`;
+            script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&intent=capture`;
             script.onload = () => console.log('PayPal SDK chargé avec succès');
-            script.onerror = () => console.error('Erreur chargement PayPal SDK');
+            script.onerror = (e) => console.error('Erreur chargement PayPal SDK', e);
             document.head.appendChild(script);
         } catch (err) {
             console.warn('Serveur non disponible - mode démo (sans PayPal réel)');
