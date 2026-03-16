@@ -84,7 +84,7 @@
       font-family: inherit;
     }
     .btn-back:hover { color: #1a1a1a; }
-    /* --- Colonne droite : récap --- */
+    /* --- Colonne droite : rÃ©cap --- */
     .checkout-right {
       flex: 0 0 380px;
       background: #fafafa;
@@ -94,16 +94,37 @@
     .summary-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
     .summary-item {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
+      padding: 12px 0;
       border-bottom: 1px solid #eee;
       font-size: 14px;
+      gap: 12px;
+    }
+    .s-img {
+      width: 64px;
+      height: 64px;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #f5f5f5;
+    }
+    .s-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .s-info .s-name {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    .s-info .s-qty {
+      display: block;
+      color: #666;
+      font-size: 13px;
     }
     .summary-item:last-of-type { border-bottom: none; }
-    .summary-item .s-name { flex: 1; }
-    .summary-item .s-qty { color: #666; margin: 0 12px; font-size: 13px; }
-    .summary-item .s-price { font-weight: 600; }
+    .summary-item .s-price { font-weight: 600; white-space: nowrap; }
     .summary-total {
       display: flex;
       justify-content: space-between;
@@ -127,7 +148,7 @@
       font-size: 14px;
       display: none;
     }
-    /* Succès */
+    /* SuccÃ¨s */
     .success-msg { text-align: center; padding: 40px 20px; display: none; }
     .success-msg .check-icon {
       width: 64px; height: 64px; background: #00c853; border-radius: 50%;
@@ -176,9 +197,9 @@
       <span class="step" id="step-pay-label">Paiement</span>
     </div>
 
-    <!-- ÉTAPE 1 : Informations client -->
+    <!-- ÃTAPE 1 : Informations client -->
     <div id="step-info" class="section">
-      <h2>Coordonnées</h2>
+      <h2>CoordonnÃ©es</h2>
       <div class="form-row full">
         <div class="form-group">
           <label for="email">Email</label>
@@ -188,16 +209,16 @@
       </div>
       <div class="form-row full">
         <div class="form-group">
-          <label for="phone">Téléphone</label>
+          <label for="phone">TÃ©lÃ©phone</label>
           <input type="tel" id="phone" placeholder="06 12 34 56 78">
-          <span class="field-error" id="err-phone">Veuillez entrer un numéro valide</span>
+          <span class="field-error" id="err-phone">Veuillez entrer un numÃ©ro valide</span>
         </div>
       </div>
 
       <h2 style="margin-top:24px;">Adresse de livraison</h2>
       <div class="form-row">
         <div class="form-group">
-          <label for="firstname">Prénom</label>
+          <label for="firstname">PrÃ©nom</label>
           <input type="text" id="firstname" placeholder="Jean" required>
           <span class="field-error" id="err-firstname">Champ requis</span>
         </div>
@@ -216,8 +237,8 @@
       </div>
       <div class="form-row full">
         <div class="form-group">
-          <label for="address2">Complément d'adresse (optionnel)</label>
-          <input type="text" id="address2" placeholder="Appartement, étage, bâtiment...">
+          <label for="address2">ComplÃ©ment d'adresse (optionnel)</label>
+          <input type="text" id="address2" placeholder="Appartement, Ã©tage, bÃ¢timent...">
         </div>
       </div>
       <div class="form-row">
@@ -254,7 +275,7 @@
       <button class="btn-primary" id="btn-to-payment" type="button">Continuer vers le paiement</button>
     </div>
 
-    <!-- ÉTAPE 2 : Paiement -->
+    <!-- ÃTAPE 2 : Paiement -->
     <div id="step-pay" class="payment-section">
       <h2>Paiement</h2>
       <div class="customer-recap" style="background:#fafafa;border-radius:8px;padding:14px;margin-bottom:20px;font-size:14px;">
@@ -263,20 +284,20 @@
       </div>
       <div id="error-msg" class="error-msg"></div>
       <div id="paypal-buttons"></div>
-      <div class="secure-badge">Paiement sécurisé par PayPal</div>
+      <div class="secure-badge">Paiement sÃ©curisÃ© par PayPal</div>
       <button class="btn-back" id="btn-back-info" type="button">&larr; Revenir aux informations</button>
     </div>
 
-    <!-- Succès -->
+    <!-- SuccÃ¨s -->
     <div id="success" class="success-msg">
       <div class="check-icon">&#10003;</div>
-      <h2>Paiement confirmé !</h2>
-      <p>Votre commande a été enregistrée. Vous recevrez un email de confirmation.</p>
-      <a id="return-link" href="#">Retour à la boutique</a>
+      <h2>Paiement confirmÃ© !</h2>
+      <p>Votre commande a Ã©tÃ© enregistrÃ©e. Vous recevrez un email de confirmation.</p>
+      <a id="return-link" href="#">Retour Ã  la boutique</a>
     </div>
   </div>
 
-  <!-- Colonne droite : récap commande -->
+  <!-- Colonne droite : rÃ©cap commande -->
   <div class="checkout-right">
     <div class="summary-title">Votre commande</div>
     <div id="cart-items"></div>
@@ -298,7 +319,7 @@
     const params = new URLSearchParams(window.location.search);
     const cartParam = params.get("cart");
     if (cartParam) {
-      try { cart = JSON.parse(atob(cartParam)); } catch(e) { console.error("Erreur décodage panier:", e); }
+      try { cart = JSON.parse(atob(cartParam)); } catch(e) { console.error("Erreur dÃ©codage panier:", e); }
     }
     const itemsParam = params.get("items");
     if (!cart.length && itemsParam) {
@@ -327,11 +348,9 @@
       const subtotal = price * qty;
       total += subtotal;
       const div = document.createElement("div");
-      div.className = "summary-item";
-      div.innerHTML =
-        '<span class="s-name">' + escapeHtml(item.name || item.title || "Produit") + '</span>' +
-        '<span class="s-qty">x' + qty + '</span>' +
-        '<span class="s-price">' + subtotal.toFixed(2) + ' &euro;</span>';
+        div.className = "summary-item";
+        const imgHtml = item.image ? '<img class="s-img" src="' + escapeHtml(item.image) + '" alt="">' : '<div class="s-img" style="display:flex;align-items:center;justify-content:center;color:#ccc;font-size:20px;">&#9744;</div>';
+        div.innerHTML = imgHtml + '<div class="s-info"><span class="s-name">' + escapeHtml(item.name || item.title || "Produit") + '</span><span class="s-qty">x' + qty + '</span></div>' + '<span class="s-price">' + subtotal.toFixed(2) + ' &euro;</span>';
       container.appendChild(div);
     }
     document.getElementById("cart-total").textContent = total.toFixed(2) + " EUR";
@@ -389,7 +408,7 @@
     };
   }
 
-  // --- Navigation étapes ---
+  // --- Navigation Ã©tapes ---
   document.getElementById("btn-to-payment").addEventListener("click", function() {
     if (!validateInfo()) return;
     customerInfo = getCustomerInfo();
@@ -400,7 +419,7 @@
       customerInfo.zip + " " + customerInfo.city + ", " +
       document.getElementById("country").options[document.getElementById("country").selectedIndex].text;
     document.getElementById("recap-address").textContent = addrText;
-    // Changer étape
+    // Changer Ã©tape
     document.getElementById("step-info").style.display = "none";
     document.getElementById("step-pay").classList.add("visible");
     document.getElementById("step-info-label").classList.remove("active");
@@ -453,7 +472,7 @@
           });
           const order = await res.json();
           if (order.id) return order.id;
-          throw new Error(order.error || "Erreur création commande");
+          throw new Error(order.error || "Erreur crÃ©ation commande");
         },
         onApprove: async function(data) {
           const res = await fetch(API_BASE + "/api/orders/" + data.orderID + "/capture", {
@@ -469,20 +488,20 @@
               window.parent.postMessage({ type: "checkout-success", orderID: data.orderID, status: "COMPLETED" }, "*");
             }
           } else {
-            showError("Le paiement n'a pas pu être finalisé. Veuillez réessayer.");
+            showError("Le paiement n'a pas pu Ãªtre finalisÃ©. Veuillez rÃ©essayer.");
           }
         },
         onError: function(err) {
           console.error("PayPal error:", err);
-          showError("Erreur de paiement. Veuillez réessayer.");
+          showError("Erreur de paiement. Veuillez rÃ©essayer.");
         },
         onCancel: function() {
-          showError("Paiement annulé.");
+          showError("Paiement annulÃ©.");
         }
       }).render("#paypal-buttons");
     } catch(err) {
       console.error("Init error:", err);
-      showError("Impossible de charger le système de paiement.");
+      showError("Impossible de charger le systÃ¨me de paiement.");
     }
   }
 
