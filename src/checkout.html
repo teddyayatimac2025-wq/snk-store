@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #fff;
+            background-color: #e8e8e8;
             color: #333;
             line-height: 1.5;
         }
@@ -22,6 +22,9 @@
             display: grid;
             grid-template-columns: 57% 43%;
             min-height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
         /* LEFT COLUMN */
@@ -283,6 +286,7 @@
         /* RIGHT COLUMN */
         .checkout-right {
             background-color: #fafafa;
+            border-left: 1px solid #e3e3e3;
             padding: 40px;
             border-left: 1px solid #e3e3e3;
             overflow-y: auto;
@@ -435,19 +439,29 @@
             }
 
             .checkout-right {
-                border-left: none;
-                border-top: 1px solid #e3e3e3;
-                position: static;
-                height: auto;
-                min-height: auto;
+                display: none;
             }
 
             .checkout-left {
-                padding: 20px;
+                padding: 0;
             }
 
-            .checkout-right {
-                padding: 20px;
+            .checkout-header {
+                padding: 16px 24px;
+                margin-bottom: 0;
+                border-bottom: none;
+            }
+
+            .order-summary-toggle {
+                display: flex;
+            }
+
+            .mobile-summary-content {
+                display: block;
+            }
+
+            #checkout-form {
+                padding: 0 24px 24px 24px;
             }
 
             .form-row {
@@ -516,7 +530,7 @@
     
         /* ORDER SUMMARY TOGGLE BAR */
         .order-summary-toggle {
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: space-between;
             padding: 16px 24px;
@@ -552,6 +566,7 @@
             color: #333;
         }
         .mobile-summary-content {
+            display: none;
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.4s ease;
