@@ -698,7 +698,7 @@
         }
 
         function formatPrice(price) {
-            return 'EUR ' + (price / 100).toFixed(2).replace('.', ',');
+            return 'EUR ' + parseFloat(price).toFixed(2).replace('.', ',');
         }
 
         function showMessage(type, message) {
@@ -765,7 +765,7 @@
                         id: 1,
                         name: 'Produit Exemple',
                         variant: 'Taille: M',
-                        price: 5999,
+                        price: 59.99,
                         quantity: 1,
                         image: 'https://via.placeholder.com/64'
                     }
@@ -773,7 +773,7 @@
             }
 
             cartData.items = items;
-            cartData.subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartData.subtotal = items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
             cartData.total = cartData.subtotal;
         }
 
@@ -846,7 +846,7 @@
             }
 
             // Simulate discount validation (10% off)
-            const discountAmount = Math.round(cartData.subtotal * 0.1);
+            const discountAmount = parseFloat((cartData.subtotal * 0.1).toFixed(2));
             cartData.total = cartData.subtotal - discountAmount;
             updatePrices();
             showMessage('success', `Code appliqué! Vous économisez ${formatPrice(discountAmount)}`);
@@ -941,7 +941,7 @@
             if (event.data && event.data.type === 'INIT_CHECKOUT') {
                 if (event.data.cart) {
                     cartData.items = event.data.cart;
-                    cartData.subtotal = cartData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    cartData.subtotal = cartData.items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
                     cartData.total = cartData.subtotal;
                     renderCart();
                 }
