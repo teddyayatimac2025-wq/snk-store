@@ -5,1071 +5,446 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paiement - Chez YouYou</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
             background-color: #e8e8e8;
             color: #333;
             line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .checkout-container {
-            display: grid;
-            grid-template-columns: 57% 43%;
-            min-height: 100vh;
-            max-width: 1200px;
-            margin: 0 auto;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
+        /* ===== LAYOUT ===== */
+        .page { display: flex; min-height: 100vh; max-width: 1200px; margin: 0 auto; box-shadow: 0 0 30px rgba(0,0,0,.08); }
+        .main   { flex: 1; background: #fff; padding: 40px 44px; overflow-y: auto; }
+        .sidebar { width: 43%; background: #fafafa; border-left: 1px solid #e1e1e1; padding: 40px 36px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 
-        /* LEFT COLUMN */
-        .checkout-left {
-            background-color: #fff;
-            padding: 40px;
-            overflow-y: auto;
-        }
+        /* ===== MOBILE SUMMARY TOGGLE (hidden desktop) ===== */
+        .mobile-toggle { display: none; }
+        .mobile-panel  { display: none; }
 
-        .checkout-header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e3e3e3;
-        }
+        /* ===== HEADER / LOGO ===== */
+        .logo { text-align: center; padding-bottom: 20px; border-bottom: 1px solid #e1e1e1; margin-bottom: 28px; }
+        .logo img { height: 50px; object-fit: contain; }
 
-        .checkout-header img {
-            height: 50px;
-            object-fit: contain;
-        }
+        /* ===== EXPRESS CHECKOUT ===== */
+        .express { margin-bottom: 28px; }
+        .express-title { text-align: center; font-size: 13px; color: #717171; margin-bottom: 14px; letter-spacing: .3px; }
+        .paypal-wrap { min-height: 45px; }
+        #paypal-button-container { width: 100%; }
 
-        /* PAIEMENT EXPRESS SECTION */
-        .express-payment-section {
-            margin-bottom: 30px;
-        }
+        /* ===== SEPARATOR ===== */
+        .sep { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+        .sep::before, .sep::after { content: ''; flex: 1; height: 1px; background: #e1e1e1; }
+        .sep span { font-size: 12px; color: #999; text-transform: uppercase; }
 
-        .express-payment-label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #666;
-            text-align: center;
-            margin-bottom: 15px;
-            letter-spacing: 0.3px;
-        }
+        /* ===== SECTIONS ===== */
+        .section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+        .section-head h2 { font-size: 18px; font-weight: 600; }
+        .section-head a  { font-size: 13px; color: #1773b0; text-decoration: underline; cursor: pointer; }
 
-        .paypal-buttons-container {
-            margin-bottom: 20px;
-            opacity: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: opacity 0.3s ease, max-height 0.3s ease;
+        /* ===== FORM ===== */
+        .field { position: relative; margin-bottom: 14px; }
+        .field input, .field select {
+            width: 100%; padding: 18px 14px 8px; font-size: 14px; border: 1px solid #d9d9d9;
+            border-radius: 6px; background: #fff; color: #333; outline: none; appearance: none;
+            font-family: inherit; transition: border-color .2s;
         }
-
-        .paypal-buttons-container.active {
-            opacity: 1;
-            max-height: 500px;
+        .field select { padding-right: 36px; cursor: pointer; }
+        .field input:focus, .field select:focus { border-color: #1773b0; box-shadow: 0 0 0 1px #1773b0; }
+        .field label {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            font-size: 14px; color: #999; pointer-events: none;
+            transition: all .15s ease;
         }
-
-        #paypal-button-container {
-            width: 100%;
+        .field input:focus ~ label, .field input:not(:placeholder-shown) ~ label,
+        .field select:focus ~ label, .field.filled label {
+            top: 10px; transform: none; font-size: 11px; color: #717171;
         }
-
-        /* SEPARATOR */
-        .separator {
-            display: flex;
-            align-items: center;
-            margin: 30px 0;
+        .field .chevron {
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            pointer-events: none; color: #999; font-size: 12px;
         }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-        .separator-line {
-            flex: 1;
-            height: 1px;
-            background-color: #d9d9d9;
-        }
+        .add-link { font-size: 13px; color: #1773b0; text-decoration: underline; cursor: pointer; margin-bottom: 14px; display: inline-block; }
+        .hidden { display: none; }
 
-        .separator-text {
-            padding: 0 15px;
-            color: #999;
-            font-size: 13px;
-            font-weight: 500;
-        }
+        .check { display: flex; align-items: flex-start; gap: 10px; margin-top: 4px; margin-bottom: 24px; font-size: 13px; color: #555; }
+        .check input[type="checkbox"] { margin-top: 3px; accent-color: #1773b0; width: 16px; height: 16px; flex-shrink: 0; }
 
-        /* SECTION TITLES */
-        .section-title {
-            font-size: 17px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        /* ===== PAYPAL PAY BUTTON (bottom) ===== */
+        .pay-section { margin-top: 28px; border-top: 1px solid #e1e1e1; padding-top: 24px; }
+        .pay-section h2 { font-size: 18px; font-weight: 600; margin-bottom: 14px; }
+        #paypal-pay-container { min-height: 50px; }
 
-        .login-link {
-            font-size: 14px;
-            color: #0073e6;
-            text-decoration: none;
-            cursor: pointer;
-        }
+        /* ===== SIDEBAR - ORDER SUMMARY ===== */
+        .product-row { display: flex; align-items: center; gap: 14px; padding: 16px 0; }
+        .product-img { position: relative; width: 64px; height: 64px; border-radius: 8px; border: 1px solid #e1e1e1; overflow: hidden; flex-shrink: 0; background: #f5f5f5; }
+        .product-img img { width: 100%; height: 100%; object-fit: cover; }
+        .product-badge { position: absolute; top: -6px; right: -6px; background: #717171; color: #fff; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+        .product-info { flex: 1; }
+        .product-name { font-size: 14px; font-weight: 500; }
+        .product-price { font-size: 14px; font-weight: 600; white-space: nowrap; }
 
-        .login-link:hover {
-            text-decoration: underline;
-        }
+        .discount-row { display: flex; gap: 10px; margin: 16px 0; }
+        .discount-row input { flex: 1; padding: 12px 14px; font-size: 14px; border: 1px solid #d9d9d9; border-radius: 6px; outline: none; font-family: inherit; }
+        .discount-row input:focus { border-color: #1773b0; }
+        .discount-row button { padding: 0 20px; font-size: 14px; border: 1px solid #d9d9d9; border-radius: 6px; background: #f5f5f5; cursor: pointer; font-family: inherit; color: #717171; transition: all .2s; }
+        .discount-row button:hover { background: #e8e8e8; color: #333; }
 
-        /* FORM ELEMENTS */
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
+        .summary-line { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: #717171; }
+        .summary-line.total { border-top: 1px solid #e1e1e1; margin-top: 12px; padding-top: 16px; font-size: 18px; font-weight: 600; color: #333; }
 
-        .form-row.full {
-            grid-template-columns: 1fr;
-        }
+        /* ===== SUCCESS SCREEN ===== */
+        .success-screen { display: none; text-align: center; padding: 60px 20px; }
+        .success-screen svg { width: 64px; height: 64px; fill: #28a745; margin-bottom: 16px; }
+        .success-screen h2 { font-size: 22px; margin-bottom: 10px; }
+        .success-screen p  { color: #717171; margin-bottom: 24px; }
+        .success-screen a  { display: inline-block; padding: 14px 32px; background: #333; color: #fff; border-radius: 6px; text-decoration: none; font-size: 15px; }
 
-        .form-group {
-            position: relative;
-            margin-bottom: 15px;
-        }
+        /* ===== FOOTER ===== */
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #999; border-top: 1px solid #e1e1e1; margin-top: 30px; }
+        .footer a { color: #1773b0; text-decoration: none; margin: 0 8px; }
 
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #d9d9d9;
-            border-radius: 5px;
-            font-size: 16px;
-            font-family: inherit;
-            background-color: #fff;
-            transition: border-color 0.2s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #000;
-            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
-        }
-
-        /* FLOATING LABEL */
-        .form-group label {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            font-size: 16px;
-            color: #999;
-            pointer-events: none;
-            transition: all 0.2s ease;
-            background-color: #fff;
-            padding: 0 2px;
-        }
-
-        .form-input:focus ~ label,
-        .form-input:not(:placeholder-shown) ~ label {
-            top: -8px;
-            left: 10px;
-            font-size: 12px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .form-input::placeholder {
-            color: transparent;
-        }
-
-        /* CHECKBOX */
-        .checkbox-group {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            margin-top: 2px;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .checkbox-group label {
-            font-size: 14px;
-            color: #333;
-            cursor: pointer;
-            line-height: 1.4;
-        }
-
-        /* OPTIONAL FIELD TOGGLE */
-        .optional-toggle {
-            font-size: 13px;
-            color: #0073e6;
-            text-decoration: none;
-            cursor: pointer;
-            margin-top: 10px;
-            display: block;
-        }
-
-        .optional-toggle:hover {
-            text-decoration: underline;
-        }
-
-        .optional-field {
-            display: none;
-        }
-
-        .optional-field.visible {
-            display: block;
-        }
-
-        /* BUTTONS */
-        .btn {
-            width: 100%;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-        }
-
-        .btn-primary {
-            background-color: #000;
-            color: #fff;
-            margin-top: 20px;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background-color: #1a1a1a;
-        }
-
-        .btn-primary:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background-color: #fff;
-            color: #000;
-            border: 1px solid #d9d9d9;
-        }
-
-        .btn-secondary:hover {
-            background-color: #f9f9f9;
-        }
-
-        /* FOOTER LINKS */
-        .footer-links {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e3e3e3;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            font-size: 12px;
-        }
-
-        .footer-links a {
-            color: #0073e6;
-            text-decoration: none;
-        }
-
-        .footer-links a:hover {
-            text-decoration: underline;
-        }
-
-        /* RIGHT COLUMN */
-        .checkout-right {
-            background-color: #fafafa;
-            border-left: 1px solid #e3e3e3;
-            padding: 40px;
-            border-left: 1px solid #e3e3e3;
-            overflow-y: auto;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-        }
-
-        .order-summary {
-            background-color: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 0 0 20px 0;
-            margin-bottom: 0;
-            border-bottom: 1px solid #e3e3e3;
-        }
-
-        .product-item {
-            display: flex;
-            gap: 15px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e3e3e3;
-        }
-
-        .product-item:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .product-image-wrapper {
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .product-image {
-            width: 64px;
-            height: 64px;
-            object-fit: cover;
-            border: 1px solid #e3e3e3;
-            border-radius: 8px;
-        }
-
-        .quantity-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 28px;
-            height: 28px;
-            background-color: #1773b0;
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            border: 2px solid #fff;
-        }
-
-        .product-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .product-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        .product-variant {
-            font-size: 13px;
-            color: #999;
-            margin-bottom: 8px;
-        }
-
-        .product-price {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        /* DISCOUNT CODE */
-        .discount-section {
-            background-color: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 15px 0;
-            margin-bottom: 0;
-            border-bottom: 1px solid #e3e3e3;
-            display: flex;
-            gap: 10px;
-        }
-
-        .discount-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #d9d9d9;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .discount-btn {
-            padding: 10px 15px;
-            background-color: #fff;
-            color: #000;
-            border: 1px solid #d9d9d9;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .discount-btn:hover {
-            background-color: #f9f9f9;
-        }
-
-        /* SUMMARY LINES */
-        .summary-section {
-            background-color: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 20px 0;
-        }
-
-        .summary-line {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            margin-bottom: 12px;
-            color: #666;
-        }
-
-        .summary-line.total {
-            font-size: 20px;
-            font-weight: 700;
-            color: #000;
-            border-top: 1px solid #e3e3e3;
-            padding-top: 12px;
-            margin-top: 12px;
-        }
-
-        /* RESPONSIVE */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .checkout-container {
-                grid-template-columns: 1fr;
+            .page { flex-direction: column; box-shadow: none; }
+            .sidebar { display: none; }
+            .main { padding: 0; }
+            .logo { padding: 16px 20px; margin-bottom: 0; border-bottom: none; }
+
+            /* Show mobile toggle */
+            .mobile-toggle {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 14px 20px; background: #fafafa; border-top: 1px solid #e1e1e1;
+                border-bottom: 1px solid #e1e1e1; cursor: pointer; user-select: none;
             }
+            .mobile-toggle .tl { display: flex; align-items: center; gap: 8px; color: #1773b0; font-size: 14px; }
+            .mobile-toggle .tl svg { width: 20px; height: 20px; fill: #1773b0; }
+            .mobile-toggle .arrow { transition: transform .3s; font-size: 10px; margin-left: 4px; }
+            .mobile-toggle .arrow.open { transform: rotate(180deg); }
+            .mobile-toggle .tp { font-size: 17px; font-weight: 600; color: #333; }
 
-            .checkout-right {
-                display: none;
-            }
+            .mobile-panel { display: block; max-height: 0; overflow: hidden; transition: max-height .4s ease; background: #fafafa; border-bottom: 1px solid #e1e1e1; }
+            .mobile-panel.open { max-height: 600px; }
+            .mobile-panel-inner { padding: 0 20px 16px; }
 
-            .checkout-left {
-                padding: 0;
-            }
-
-            .checkout-header {
-                padding: 16px 24px;
-                margin-bottom: 0;
-                border-bottom: none;
-            }
-
-            .order-summary-toggle {
-                display: flex;
-            }
-
-            .mobile-summary-content {
-                display: block;
-            }
-
-            #checkout-form {
-                padding: 0 24px 24px 24px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
+            .form-wrap { padding: 24px 20px; }
+            .row { grid-template-columns: 1fr; }
         }
-
-        /* MESSAGES */
-        .message {
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        /* SUCCESS SCREEN */
-        .success-screen {
-            display: none;
-            text-align: center;
-            padding: 60px 40px;
-        }
-
-        .success-screen.active {
-            display: block;
-        }
-
-        .success-screen h1 {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #000;
-        }
-
-        .success-screen p {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .success-checkmark {
-            width: 80px;
-            height: 80px;
-            background-color: #000;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 30px;
-            font-size: 40px;
-            color: #fff;
-        }
-    
-        /* ORDER SUMMARY TOGGLE BAR */
-        .order-summary-toggle {
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-            background-color: #fafafa;
-            border-bottom: 1px solid #e3e3e3;
-            cursor: pointer;
-            user-select: none;
-        }
-        .order-summary-toggle .toggle-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #1773b0;
-            font-size: 14px;
-        }
-        .order-summary-toggle .toggle-left svg {
-            width: 22px;
-            height: 22px;
-            fill: #1773b0;
-        }
-        .order-summary-toggle .toggle-arrow {
-            transition: transform 0.3s ease;
-            display: inline-block;
-            font-size: 10px;
-            margin-left: 4px;
-        }
-        .order-summary-toggle .toggle-arrow.open {
-            transform: rotate(180deg);
-        }
-        .order-summary-toggle .toggle-price {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-        }
-        .mobile-summary-content {
-            display: none;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease;
-            background-color: #fafafa;
-            border-bottom: 1px solid #e3e3e3;
-        }
-        .mobile-summary-content.open {
-            max-height: 800px;
-        }
-        .mobile-summary-inner {
-            padding: 0 24px 20px 24px;
-        }
-
     </style>
 </head>
 <body>
-        <div class="checkout-container">
-        <!-- LEFT COLUMN -->
-        <div class="checkout-left">
-            <!-- HEADER -->
-            <div class="checkout-header">
-                <img src="https://chezyouyou.fr/cdn/shop/files/logo_chez_youyou.png?v=1772120504" alt="Chez YouYou">
+
+<div class="page" id="checkout-page">
+
+    <!-- ===== LEFT / MAIN ===== -->
+    <div class="main">
+
+        <!-- Logo -->
+        <div class="logo">
+            <img src="https://chezyouyou.fr/cdn/shop/files/logo_chez_youyou.png?v=1772120504" alt="Chez YouYou">
+        </div>
+
+        <!-- Mobile order summary toggle -->
+        <div class="mobile-toggle" id="mob-toggle">
+            <div class="tl">
+                <svg viewBox="0 0 20 20"><path d="M17.178 2H2.822C1.816 2 1 2.816 1 3.822v12.356C1 17.184 1.816 18 2.822 18h14.356C18.184 18 19 17.184 19 16.178V3.822C19 2.816 18.184 2 17.178 2zM5 4h2v2H5V4zm-2 0h1v2H3V4zm14 12.178c0 .453-.369.822-.822.822H3.822A.822.822 0 0 1 3 16.178V7h14v9.178zM17 6H8V4h9v2z"/></svg>
+                <span>Résumé de la commande <span class="arrow" id="mob-arrow">&#9660;</span></span>
             </div>
-            <!-- ORDER SUMMARY TOGGLE -->
-            <div class="order-summary-toggle" id="summary-toggle">
-                <div class="toggle-left">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M17.178 2H2.822C1.816 2 1 2.816 1 3.822v12.356C1 17.184 1.816 18 2.822 18h14.356C18.184 18 19 17.184 19 16.178V3.822C19 2.816 18.184 2 17.178 2zM5 4h2v2H5V4zm-2 0h1v2H3V4zm14 12.178c0 .453-.369.822-.822.822H3.822A.822.822 0 0 1 3 16.178V7h14v9.178zM17 6H8V4h9v2z"/></svg>
-                    <span>Résumé de la commande <span class="toggle-arrow" id="toggle-arrow">▼</span></span>
-                </div>
-                <span class="toggle-price" id="toggle-total-price">0.00 €</span>
-            </div>
-            <div class="mobile-summary-content" id="mobile-summary-content">
-                <div class="mobile-summary-inner" id="mobile-summary-inner"></div>
-            </div>
+            <span class="tp" id="mob-total">0.00 &euro;</span>
+        </div>
+        <div class="mobile-panel" id="mob-panel">
+            <div class="mobile-panel-inner" id="mob-panel-inner"></div>
+        </div>
 
+        <!-- Form area -->
+        <div class="form-wrap" style="padding:0;">
+            <div id="checkout-form-area">
 
-
-            <!-- MESSAGES -->
-            <div id="error-message" class="message error"></div>
-            <div id="success-message" class="message success"></div>
-
-            <!-- CHECKOUT FORM -->
-            <form id="checkout-form">
-                <!-- PAIEMENT EXPRESS -->
-                <div class="express-payment-section">
-                    <div class="express-payment-label">Paiement express</div>
-                    <div class="paypal-buttons-container" id="paypal-buttons-wrapper">
-                        <div id="paypal-button-container"></div>
-                    </div>
+                <!-- Paiement express -->
+                <div class="express">
+                    <div class="express-title">Paiement express</div>
+                    <div class="paypal-wrap" id="paypal-button-container"></div>
                 </div>
 
-                <!-- SEPARATOR -->
-                <div class="separator">
-                    <div class="separator-line"></div>
-                    <div class="separator-text">OU</div>
-                    <div class="separator-line"></div>
+                <!-- Separator -->
+                <div class="sep"><span>ou</span></div>
+
+                <!-- Contact -->
+                <div class="section-head">
+                    <h2>Contact</h2>
+                    <a>Se connecter</a>
+                </div>
+                <div class="field">
+                    <input type="email" id="email" placeholder=" " autocomplete="email" required>
+                    <label for="email">Adresse e-mail</label>
+                </div>
+                <div class="check">
+                    <input type="checkbox" id="newsletter" checked>
+                    <span>Recevoir des emails de suivi pour votre commande. Pensez à vérifier vos spams</span>
                 </div>
 
-                <!-- CONTACT SECTION -->
-                <div>
-                    <div class="section-title">
-                        <span>Contact</span>
-                        <a href="#" class="login-link">Se connecter</a>
-                    </div>
+                <!-- Livraison -->
+                <div class="section-head"><h2>Livraison</h2></div>
 
-                    <div class="form-group">
-                        <input type="email" id="email" name="email" class="form-input" placeholder="Adresse e-mail" required>
-                        <label for="email">Adresse e-mail</label>
-                    </div>
+                <div class="field filled">
+                    <select id="country">
+                        <option value="FR" selected>France</option>
+                        <option value="BE">Belgique</option>
+                        <option value="CH">Suisse</option>
+                        <option value="LU">Luxembourg</option>
+                        <option value="CA">Canada</option>
+                        <option value="MC">Monaco</option>
+                    </select>
+                    <label>Pays/région</label>
+                    <span class="chevron">&#9662;</span>
+                </div>
 
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="email-marketing" name="emailMarketing" checked>
-                        <label for="email-marketing">Recevoir des emails de suivi pour votre commande. Pensez à vérifier vos spams</label>
+                <div class="row">
+                    <div class="field">
+                        <input type="text" id="firstName" placeholder=" " autocomplete="given-name" required>
+                        <label for="firstName">Prénom</label>
+                    </div>
+                    <div class="field">
+                        <input type="text" id="lastName" placeholder=" " autocomplete="family-name" required>
+                        <label for="lastName">Nom</label>
                     </div>
                 </div>
 
-                <!-- DELIVERY SECTION -->
-                <div>
-                    <div class="section-title">Livraison</div>
+                <div class="field">
+                    <input type="text" id="address" placeholder=" " autocomplete="address-line1" required>
+                    <label for="address">Adresse</label>
+                </div>
 
-                    <div class="form-row full">
-                        <div class="form-group">
-                            <select id="country" name="country" class="form-input" required style="padding-top:22px;">
-                                <option value="FR">France</option>
-                                <option value="BE">Belgique</option>
-                                <option value="NL">Pays-Bas</option>
-                                <option value="DE">Allemagne</option>
-                                <option value="IT">Italie</option>
-                                <option value="ES">Espagne</option>
-                                <option value="GB">Royaume-Uni</option>
-                                <option value="US">États-Unis</option>
-                                <option value="CA">Canada</option>
-                                <option value="CH">Suisse</option>
-                            </select>
-                            <label for="country" style="position:absolute;top:-8px;left:10px;font-size:12px;color:#333;font-weight:500;background:#fff;padding:0 2px;">Pays/région</label>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <input type="text" id="firstName" name="firstName" class="form-input" placeholder="Prénom" required>
-                            <label for="firstName">Prènom</label>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" id="lastName" name="lastName" class="form-input" placeholder="Nom" required>
-                            <label for="lastName">Nom</label>
-                        </div>
-                    </div>
-
-                    <div class="form-group form-row full">
-                        <input type="text" id="address" name="address" class="form-input" placeholder="Adresse" required>
-                        <label for="address">Adresse</label>
-                    </div>
-
-                    <div class="form-group form-row full" id="apartment-row" style="display:none">
-                        <input type="text" id="apartment" name="apartment" class="form-input" placeholder="Complément d'adresse (optionnel)">
+                <div id="apt-row" class="hidden">
+                    <div class="field">
+                        <input type="text" id="apartment" placeholder=" " autocomplete="address-line2">
                         <label for="apartment">Complément d'adresse</label>
                     </div>
+                </div>
+                <a class="add-link" id="add-apt" onclick="document.getElementById('apt-row').classList.remove('hidden');this.style.display='none';">Ajouter un complément d'adresse</a>
 
-                    <a href="#" class="optional-toggle" id="toggle-apartment">Ajouter un complément d'adresse</a>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <input type="text" id="postalCode" name="postalCode" class="form-input" placeholder="Code postal" required>
-                            <label for="postalCode">Code postal</label>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" id="city" name="city" class="form-input" placeholder="Ville" required>
-                            <label for="city">Ville</label>
-                        </div>
+                <div class="row">
+                    <div class="field">
+                        <input type="text" id="postalCode" placeholder=" " autocomplete="postal-code" required>
+                        <label for="postalCode">Code postal</label>
                     </div>
-
-                    <div class="form-group form-row full">
-                        <input type="tel" id="phone" name="phone" class="form-input" placeholder="Téléphone" required>
-                        <label for="phone">Téléphone</label>
+                    <div class="field">
+                        <input type="text" id="city" placeholder=" " autocomplete="address-level2" required>
+                        <label for="city">Ville</label>
                     </div>
                 </div>
 
-                <!-- PAYMENT BUTTON -->
-                <button type="button" id="submit-btn" class="btn btn-primary">Payer maintenant</button>
-            </form>
+                <div class="field">
+                    <input type="tel" id="phone" placeholder=" " autocomplete="tel">
+                    <label for="phone">Téléphone</label>
+                </div>
 
-            <!-- FOOTER LINKS -->
-            <div class="footer-links">
+                <!-- Payment section -->
+                <div class="pay-section">
+                    <h2>Paiement</h2>
+                    <p style="font-size:13px;color:#717171;margin-bottom:14px;">Toutes les transactions sont sécurisées et chiffrées.</p>
+                    <div id="paypal-pay-container"></div>
+                </div>
+
+            </div><!-- /checkout-form-area -->
+
+            <!-- Success screen -->
+            <div class="success-screen" id="success-screen">
+                <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm-1.7 17.5l-4.6-4.6 1.4-1.4 3.2 3.2 6.8-6.8 1.4 1.4-8.2 8.2z"/></svg>
+                <h2>Merci pour votre commande !</h2>
+                <p>Votre paiement a été confirmé. Vous recevrez un email de confirmation.</p>
+                <a href="https://chezyouyou.fr">Retour à la boutique</a>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
                 <a href="#">Politique de remboursement</a>
                 <a href="#">Politique de confidentialité</a>
-                <a href="#">Conditions de service</a>
-                <a href="#">À propos</a>
-            </div>
-        </div>
-
-        <!-- RIGHT COLUMN -->
-        <div class="checkout-right">
-            <!-- ORDER SUMMARY -->
-            <div class="order-summary" id="order-summary">
-                <!-- Products will be populated here -->
+                <a href="#">Conditions d'utilisation</a>
             </div>
 
-            <!-- DISCOUNT CODE -->
-            <div class="discount-section">
-                <input type="text" id="discount-code" class="discount-input" placeholder="code de réduction">
-                <button type="button" class="discount-btn" id="apply-discount-btn">Valider</button>
-            </div>
-
-            <!-- SUMMARY -->
-            <div class="summary-section">
-                <div class="summary-line">
-                    <span>Sous-total</span>
-                    <span id="subtotal">EUR 0,00</span>
-                </div>
-                <div class="summary-line">
-                    <span>Expédition</span>
-                    <span id="shipping">Saisir une adresse d'expédition</span>
-                </div>
-                <div class="summary-line total">
-                    <span>Total</span>
-                    <span id="total">EUR 0,00</span>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- SUCCESS SCREEN (hidden initially) -->
-    <div class="checkout-container success-screen" id="success-screen">
-        <div style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; min-height: 100vh;">
-            <div style="max-width: 400px;">
-                <div class="success-checkmark">✓</div>
-                <h1>Commande confirmée</h1>
-                <p>Merci pour votre achat. Un email de confirmation a été envoyé à votre adresse.</p>
-                <p id="order-number" style="font-size: 14px; color: #999;"></p>
-            </div>
+    <!-- ===== RIGHT / SIDEBAR ===== -->
+    <div class="sidebar" id="sidebar">
+        <div id="sidebar-products"></div>
+        <div class="discount-row">
+            <input type="text" id="discount-code" placeholder="code de réduction">
+            <button type="button" id="discount-btn">Valider</button>
+        </div>
+        <div id="sidebar-totals">
+            <div class="summary-line"><span>Sous-total</span><span id="subtotal">0.00 &euro;</span></div>
+            <div class="summary-line"><span>Expédition</span><span id="shipping">Saisir une adresse d'expédition</span></div>
+            <div class="summary-line total"><span>Total</span><span id="total">0.00 &euro;</span></div>
         </div>
     </div>
 
-    <script>
-        // UTILITY FUNCTIONS
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    /* ===== PARSE CART ===== */
+    var cartItems = [];
+    try {
+        var params = new URLSearchParams(window.location.search);
+        var cartB64 = params.get('cart');
+        if (cartB64) cartItems = JSON.parse(atob(cartB64));
+    } catch(e) { console.error('Cart parse error:', e); }
+
+    if (!cartItems.length) {
+        cartItems = [{ name: 'Produit', price: '0.00', quantity: 1 }];
+    }
+
+    /* ===== RENDER PRODUCTS ===== */
+    var subtotalVal = 0;
+    var sidebarProducts = document.getElementById('sidebar-products');
+    var html = '';
+
+    cartItems.forEach(function(item) {
+        var price = parseFloat(item.price) || 0;
+        var qty = parseInt(item.quantity) || 1;
+        var lineTotal = price * qty;
+        subtotalVal += lineTotal;
+
+        html += '<div class="product-row">';
+        html += '<div class="product-img">';
+        if (item.image) {
+            html += '<img src="' + item.image + '" alt="' + item.name + '">';
         }
+        html += '<span class="product-badge">' + qty + '</span>';
+        html += '</div>';
+        html += '<div class="product-info"><div class="product-name">' + item.name + '</div></div>';
+        html += '<div class="product-price">' + lineTotal.toFixed(2) + ' &euro;</div>';
+        html += '</div>';
+    });
 
-        function decodeHtmlEntities(text) {
-            const textarea = document.createElement('textarea');
-            textarea.innerHTML = text;
-            return textarea.value;
-        }
+    sidebarProducts.innerHTML = html;
 
-        function formatPrice(price) {
-            return parseFloat(price).toFixed(2) + ' \u20ac';
-        }
+    /* ===== UPDATE TOTALS ===== */
+    function updateTotals() {
+        document.getElementById('subtotal').textContent = subtotalVal.toFixed(2) + ' \u20AC';
+        document.getElementById('total').textContent = subtotalVal.toFixed(2) + ' \u20AC';
+        document.getElementById('mob-total').textContent = subtotalVal.toFixed(2) + ' \u20AC';
+    }
+    updateTotals();
 
-        function showMessage(type, message) {
-            const errorEl = document.getElementById('error-message');
-            const successEl = document.getElementById('success-message');
+    /* ===== MOBILE TOGGLE ===== */
+    document.getElementById('mob-toggle').addEventListener('click', function() {
+        document.getElementById('mob-panel').classList.toggle('open');
+        document.getElementById('mob-arrow').classList.toggle('open');
+    });
 
-            if (type === 'error') {
-                errorEl.textContent = message;
-                errorEl.style.display = 'block';
-                successEl.style.display = 'none';
-            } else {
-                successEl.textContent = message;
-                successEl.style.display = 'block';
-                errorEl.style.display = 'none';
-            }
-        }
+    /* Sync sidebar content into mobile panel */
+    function syncMobile() {
+        var inner = document.getElementById('mob-panel-inner');
+        inner.innerHTML = sidebarProducts.innerHTML
+            + document.getElementById('sidebar-totals').outerHTML;
+    }
+    syncMobile();
 
-        // CART PARSING
-        let cartData = {
-            items: [],
-            total: 0,
-            subtotal: 0
+    /* ===== FORM VALIDATION ===== */
+    function getFormData() {
+        return {
+            email: document.getElementById('email').value.trim(),
+            firstName: document.getElementById('firstName').value.trim(),
+            lastName: document.getElementById('lastName').value.trim(),
+            address: document.getElementById('address').value.trim(),
+            apartment: document.getElementById('apartment').value.trim(),
+            city: document.getElementById('city').value.trim(),
+            postalCode: document.getElementById('postalCode').value.trim(),
+            country: document.getElementById('country').value,
+            phone: document.getElementById('phone').value.trim()
         };
+    }
 
-        function parseCart() {
-            const params = new URLSearchParams(window.location.search);
-            let items = [];
+    function validateForm() {
+        var d = getFormData();
+        if (!d.email) { alert('Veuillez entrer votre adresse e-mail.'); return false; }
+        if (!d.firstName) { alert('Veuillez entrer votre prénom.'); return false; }
+        if (!d.lastName) { alert('Veuillez entrer votre nom.'); return false; }
+        if (!d.address) { alert('Veuillez entrer votre adresse.'); return false; }
+        if (!d.postalCode) { alert('Veuillez entrer votre code postal.'); return false; }
+        if (!d.city) { alert('Veuillez entrer votre ville.'); return false; }
+        return true;
+    }
 
-            // Try to parse from ?cart=BASE64
-            if (params.has('cart')) {
-                try {
-                    const decoded = atob(params.get('cart'));
-                    items = JSON.parse(decoded);
-                } catch (e) {
-                    console.error('Failed to parse cart:', e);
-                }
+    /* ===== PAYPAL INTEGRATION ===== */
+    fetch('/api/config')
+        .then(function(r) { return r.json(); })
+        .then(function(cfg) {
+            var script = document.createElement('script');
+            script.src = 'https://www.paypal.com/sdk/js?client-id=' + cfg.clientId + '&currency=EUR';
+            script.onload = function() { initPayPal(); };
+            document.head.appendChild(script);
+        })
+        .catch(function(e) { console.error('Config error:', e); });
+
+    function initPayPal() {
+        /* Express buttons (top) */
+        paypal.Buttons({
+            style: { layout: 'vertical', color: 'black', shape: 'rect', label: 'paypal', height: 48 },
+            createOrder: createPayPalOrder,
+            onApprove: capturePayPalOrder,
+            onError: function(err) { alert('Erreur PayPal: ' + err.message); }
+        }).render('#paypal-button-container');
+
+        /* Payment buttons (bottom) */
+        paypal.Buttons({
+            style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay', height: 48 },
+            createOrder: createPayPalOrder,
+            onApprove: capturePayPalOrder,
+            onError: function(err) { alert('Erreur PayPal: ' + err.message); }
+        }).render('#paypal-pay-container');
+    }
+
+    function createPayPalOrder() {
+        var totalAmount = subtotalVal.toFixed(2);
+        return fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                cart: cartItems,
+                total: totalAmount
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) { return data.id; });
+    }
+
+    function capturePayPalOrder(data) {
+        var form = getFormData();
+        return fetch('/api/orders/' + data.orderID + '/capture', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                customer: form,
+                cart: cartItems
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.status === 'COMPLETED' || result.shopifyOrder) {
+                document.getElementById('checkout-form-area').style.display = 'none';
+                document.getElementById('success-screen').style.display = 'block';
+                document.querySelector('.mobile-toggle').style.display = 'none';
+                document.querySelector('.mobile-panel').style.display = 'none';
+            } else {
+                alert('Le paiement a échoué. Veuillez réessayer.');
             }
-
-            // Try to parse from ?items=ENCODED
-            if (params.has('items') && items.length === 0) {
-                try {
-                    items = JSON.parse(decodeURIComponent(params.get('items')));
-                } catch (e) {
-                    console.error('Failed to parse items:', e);
-                }
-            }
-
-            // Parse from localStorage as fallback
-            if (items.length === 0) {
-                try {
-                    const stored = localStorage.getItem('cart');
-                    if (stored) {
-                        items = JSON.parse(stored);
-                    }
-                } catch (e) {
-                    console.error('Failed to parse stored cart:', e);
-                }
-            }
-
-            // Default demo items if nothing found
-            if (items.length === 0) {
-                items = [
-                    {
-                        id: 1,
-                        name: 'Produit Exemple',
-                        variant: 'Taille: M',
-                        price: 59.99,
-                        quantity: 1,
-                        image: 'https://via.placeholder.com/64'
-                    }
-                ];
-            }
-
-            cartData.items = items;
-            cartData.subtotal = items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
-            cartData.total = cartData.subtotal;
-        }
-
-        function renderCart() {
-            const summaryEl = document.getElementById('order-summary');
-            summaryEl.innerHTML = cartData.items.map(item => `
-                <div class="product-item">
-                    <div class="product-image-wrapper">
-                        <img src="${escapeHtml(item.image || 'https://via.placeholder.com/64')}" alt="${escapeHtml(item.name)}" class="product-image">
-                        <div class="quantity-badge">${item.quantity}</div>
-                    </div>
-                    <div class="product-info" style="display:flex;justify-content:space-between;align-items:flex-start;">
-                        <div>
-                            <div class="product-name">${escapeHtml(item.name)}</div>
-                            <div class="product-variant">${escapeHtml(item.variant || '')}</div>
-                        </div>
-                        <div class="product-price">${formatPrice(item.price)}</div>
-                    </div>
-                </div>
-            `).join('');
-
-            updatePrices();
-        }
-
-        function updatePrices() {
-            document.getElementById('subtotal').textContent = formatPrice(cartData.subtotal);
-            document.getElementById('total').textContent = formatPrice(cartData.total);
-        }
-
-        // FORM HANDLING
-        document.getElementById('submit-btn').addEventListener('click', function(e) {
-            e.preventDefault();
-
-            // Validate form
-            const form = document.getElementById('checkout-form');
-            if (!form.checkValidity()) {
-                showMessage('error', 'Veuillez remplir tous les champs requis');
-                return;
-            }
-
-            // Validate email
-            const email = document.getElementById('email').value;
-            if (!email.includes('@')) {
-                showMessage('error', 'Veuillez entrer une adresse e-mail valide');
-                return;
-            }
-
-            // Show PayPal buttons
-            const paypalWrapper = document.getElementById('paypal-buttons-wrapper');
-            paypalWrapper.classList.add('active');
-
-            // Scroll to PayPal buttons
-            paypalWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            showMessage('success', 'Veuillez continuer avec PayPal pour finaliser votre paiement');
+        })
+        .catch(function(err) {
+            alert('Erreur lors du paiement: ' + err.message);
         });
+    }
 
-        // OPTIONAL FIELD TOGGLE
-        document.getElementById('toggle-apartment').addEventListener('click', function(e) {
-            e.preventDefault();
-            const apartmentField = document.getElementById('apartment').parentElement;
-            apartmentField.classList.toggle('visible');
-            this.style.display = this.style.display === 'none' ? 'block' : 'none';
-        });
-
-        // DISCOUNT CODE
-        document.getElementById('apply-discount-btn').addEventListener('click', function() {
-            const code = document.getElementById('discount-code').value.trim();
-            if (!code) {
-                showMessage('error', 'Veuillez entrer un code de réduction');
-                return;
-            }
-
-            // Simulate discount validation (10% off)
-            const discountAmount = parseFloat((cartData.subtotal * 0.1).toFixed(2));
-            cartData.total = cartData.subtotal - discountAmount;
-            updatePrices();
-            showMessage('success', `Code appliqué! Vous économisez ${formatPrice(discountAmount)}`);
-        });
-
-        // PAYPAL INTEGRATION
-        const API_BASE = window.location.origin;
-
-        function getCustomerInfo() {
-            return {
-                email: document.getElementById('email').value.trim(),
-                phone: document.getElementById('phone').value.trim(),
-                firstName: document.getElementById('firstName').value.trim(),
-                lastName: document.getElementById('lastName').value.trim(),
-                address1: document.getElementById('address').value.trim(),
-                address2: document.getElementById('apartment').value.trim(),
-                city: document.getElementById('city').value.trim(),
-                zip: document.getElementById('postalCode').value.trim(),
-                country: document.getElementById('country').value
-            };
-        }
-
-        async function initPayPal() {
-            try {
-                const configRes = await fetch(API_BASE + "/api/config");
-                const config = await configRes.json();
-                const script = document.createElement('script');
-                script.src = "https://www.paypal.com/sdk/js?client-id=" + config.clientId + "&currency=EUR&intent=capture";
-                script.onload = function() { renderPayPalButtons(); };
-                script.onerror = function() { showMessage('error', 'Impossible de charger PayPal.'); };
-                document.head.appendChild(script);
-            } catch(err) {
-                console.error("Config error:", err);
-                showMessage('error', 'Impossible de charger le système de paiement.');
-            }
-        }
-
-        function renderPayPalButtons() {
-            if (!window.paypal) return;
-
-            const container = document.getElementById('paypal-button-container');
-            if (container.hasChildNodes()) container.innerHTML = '';
-
-            window.paypal.Buttons({
-                style: { layout: "vertical", shape: "rect", label: "pay" },
-                createOrder: async function() {
-                    const customerInfo = getCustomerInfo();
-                    const res = await fetch(API_BASE + "/api/orders", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ cart: cartData.items, customer: customerInfo })
-                    });
-                    const order = await res.json();
-                    if (order.id) return order.id;
-                    throw new Error(order.error || "Erreur création commande");
-                },
-                onApprove: async function(data) {
-                    const customerInfo = getCustomerInfo();
-                    const res = await fetch(API_BASE + "/api/orders/" + data.orderID + "/capture", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ cart: cartData.items, customer: customerInfo })
-                    });
-                    const result = await res.json();
-                    if (result.status === "COMPLETED") {
-                        showSuccessScreen(data.orderID);
-                        if (window.parent !== window) {
-                            window.parent.postMessage({ type: "checkout-success", orderID: data.orderID, status: "COMPLETED" }, "*");
-                        }
-                    } else {
-                        showMessage('error', "Le paiement n'a pas pu être finalisé. Veuillez réessayer.");
-                    }
-                },
-                onError: function(err) {
-                    console.error('PayPal error:', err);
-                    showMessage('error', 'Erreur de paiement. Veuillez réessayer.');
-                },
-                onCancel: function() {
-                    showMessage('error', 'Paiement annulé.');
-                }
-            }).render('#paypal-button-container');
-        }
-
-        function showSuccessScreen(orderId) {
-            document.getElementById('checkout-form').style.display = 'none';
-            document.getElementById('success-screen').classList.add('active');
-            document.getElementById('order-number').textContent = `Numéro de commande: ${orderId}`;
-        }
-
-        // IFRAME POSTMESSAGE SUPPORT
-        window.addEventListener('message', function(event) {
-            if (event.data && event.data.type === 'INIT_CHECKOUT') {
-                if (event.data.cart) {
-                    cartData.items = event.data.cart;
-                    cartData.subtotal = cartData.items.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
-                    cartData.total = cartData.subtotal;
-                    renderCart();
-                }
-            }
-        });
-
-        // INITIALIZATION
-        document.addEventListener('DOMContentLoaded', function() {
-            parseCart();
-            renderCart();
-            initPayPal();
-        });
-    
-        // ORDER SUMMARY TOGGLE
-        document.getElementById('summary-toggle').addEventListener('click', function() {
-            var content = document.getElementById('mobile-summary-content');
-            var arrow = document.getElementById('toggle-arrow');
-            content.classList.toggle('open');
-            arrow.classList.toggle('open');
-        });
-
-        function syncMobileSummary() {
-            var right = document.querySelector('.checkout-right');
-            var inner = document.getElementById('mobile-summary-inner');
-            var togglePrice = document.getElementById('toggle-total-price');
-            if (right && inner) {
-                inner.innerHTML = right.innerHTML;
-            }
-            var totalEl = document.getElementById('total');
-            if (totalEl && togglePrice) {
-                togglePrice.textContent = totalEl.textContent;
-            }
-        }
-
-        // Observe the right column for any content changes
-        var rightCol = document.querySelector('.checkout-right');
-        if (rightCol) {
-            var observer = new MutationObserver(function() { syncMobileSummary(); });
-            observer.observe(rightCol, { childList: true, subtree: true, characterData: true });
-        }
-
-        // Initial sync after a short delay to let renderCart finish
-        setTimeout(syncMobileSummary, 500);
-        setTimeout(syncMobileSummary, 2000);
-
-    </script>
+})();
+</script>
 </body>
 </html>
