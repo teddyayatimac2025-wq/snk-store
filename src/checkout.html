@@ -1039,10 +1039,9 @@
             if (right && inner) {
                 inner.innerHTML = right.innerHTML;
             }
-            var totalEl = right ? right.querySelector('.summary-total') : null;
+            var totalEl = document.getElementById('total');
             if (totalEl && togglePrice) {
-                var priceSpan = totalEl.querySelector('span:last-child');
-                if (priceSpan) togglePrice.textContent = priceSpan.textContent;
+                togglePrice.textContent = totalEl.textContent;
             }
         }
 
