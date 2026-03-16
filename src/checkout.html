@@ -513,9 +513,73 @@
             font-size: 40px;
             color: #fff;
         }
+    
+        /* ORDER SUMMARY TOGGLE BAR */
+        .order-summary-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background-color: #fafafa;
+            border-bottom: 1px solid #e3e3e3;
+            cursor: pointer;
+            user-select: none;
+        }
+        .order-summary-toggle .toggle-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1773b0;
+            font-size: 14px;
+        }
+        .order-summary-toggle .toggle-left svg {
+            width: 22px;
+            height: 22px;
+            fill: #1773b0;
+        }
+        .order-summary-toggle .toggle-arrow {
+            transition: transform 0.3s ease;
+            display: inline-block;
+            font-size: 10px;
+            margin-left: 4px;
+        }
+        .order-summary-toggle .toggle-arrow.open {
+            transform: rotate(180deg);
+        }
+        .order-summary-toggle .toggle-price {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .mobile-summary-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            background-color: #fafafa;
+            border-bottom: 1px solid #e3e3e3;
+        }
+        .mobile-summary-content.open {
+            max-height: 800px;
+        }
+        .mobile-summary-inner {
+            padding: 0 24px 20px 24px;
+        }
+
     </style>
 </head>
 <body>
+    <!-- ORDER SUMMARY TOGGLE -->
+    <div class="order-summary-toggle" id="summary-toggle">
+        <div class="toggle-left">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M17.178 2H2.822C1.816 2 1 2.816 1 3.822v12.356C1 17.184 1.816 18 2.822 18h14.356C18.184 18 19 17.184 19 16.178V3.822C19 2.816 18.184 2 17.178 2zM5 4h2v2H5V4zm-2 0h1v2H3V4zm14 12.178c0 .453-.369.822-.822.822H3.822A.822.822 0 0 1 3 16.178V7h14v9.178zM17 6H8V4h9v2z"/></svg>
+            <span>Résumé de la commande <span class="toggle-arrow" id="toggle-arrow">▼</span></span>
+        </div>
+        <span class="toggle-price" id="toggle-total-price">0.00 €</span>
+    </div>
+    <div class="mobile-summary-content" id="mobile-summary-content">
+        <div class="mobile-summary-inner" id="mobile-summary-inner"></div>
+    </div>
+
     <div class="checkout-container">
         <!-- LEFT COLUMN -->
         <div class="checkout-left">
@@ -959,6 +1023,40 @@
             renderCart();
             initPayPal();
         });
+    
+        // ORDER SUMMARY TOGGLE
+        document.getElementById('summary-toggle').addEventListener('click', function() {
+            var content = document.getElementById('mobile-summary-content');
+            var arrow = document.getElementById('toggle-arrow');
+            content.classList.toggle('open');
+            arrow.classList.toggle('open');
+        });
+
+        function syncMobileSummary() {
+            var right = document.querySelector('.checkout-right');
+            var inner = document.getElementById('mobile-summary-inner');
+            var togglePrice = document.getElementById('toggle-total-price');
+            if (right && inner) {
+                inner.innerHTML = right.innerHTML;
+            }
+            var totalEl = right ? right.querySelector('.summary-total') : null;
+            if (totalEl && togglePrice) {
+                var priceSpan = totalEl.querySelector('span:last-child');
+                if (priceSpan) togglePrice.textContent = priceSpan.textContent;
+            }
+        }
+
+        // Observe the right column for any content changes
+        var rightCol = document.querySelector('.checkout-right');
+        if (rightCol) {
+            var observer = new MutationObserver(function() { syncMobileSummary(); });
+            observer.observe(rightCol, { childList: true, subtree: true, characterData: true });
+        }
+
+        // Initial sync after a short delay to let renderCart finish
+        setTimeout(syncMobileSummary, 500);
+        setTimeout(syncMobileSummary, 2000);
+
     </script>
 </body>
 </html>
