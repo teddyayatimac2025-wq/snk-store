@@ -84,7 +84,7 @@
       font-family: inherit;
     }
     .btn-back:hover { color: #1a1a1a; }
-    /* --- Colonne droite : rÃ©cap --- */
+    /* --- Colonne droite : récap --- */
     .checkout-right {
       flex: 0 0 380px;
       background: #fafafa;
@@ -148,7 +148,7 @@
       font-size: 14px;
       display: none;
     }
-    /* SuccÃ¨s */
+    /* Succès */
     .success-msg { text-align: center; padding: 40px 20px; display: none; }
     .success-msg .check-icon {
       width: 64px; height: 64px; background: #00c853; border-radius: 50%;
@@ -199,7 +199,7 @@
 
     <!-- ÃTAPE 1 : Informations client -->
     <div id="step-info" class="section">
-      <h2>CoordonnÃ©es</h2>
+      <h2>Coordonnées</h2>
       <div class="form-row full">
         <div class="form-group">
           <label for="email">Email</label>
@@ -209,16 +209,16 @@
       </div>
       <div class="form-row full">
         <div class="form-group">
-          <label for="phone">TÃ©lÃ©phone</label>
+          <label for="phone">Téléphone</label>
           <input type="tel" id="phone" placeholder="06 12 34 56 78">
-          <span class="field-error" id="err-phone">Veuillez entrer un numÃ©ro valide</span>
+          <span class="field-error" id="err-phone">Veuillez entrer un numéro valide</span>
         </div>
       </div>
 
       <h2 style="margin-top:24px;">Adresse de livraison</h2>
       <div class="form-row">
         <div class="form-group">
-          <label for="firstname">PrÃ©nom</label>
+          <label for="firstname">Prénom</label>
           <input type="text" id="firstname" placeholder="Jean" required>
           <span class="field-error" id="err-firstname">Champ requis</span>
         </div>
@@ -237,8 +237,8 @@
       </div>
       <div class="form-row full">
         <div class="form-group">
-          <label for="address2">ComplÃ©ment d'adresse (optionnel)</label>
-          <input type="text" id="address2" placeholder="Appartement, Ã©tage, bÃ¢timent...">
+          <label for="address2">Complément d'adresse (optionnel)</label>
+          <input type="text" id="address2" placeholder="Appartement, étage, bâtiment...">
         </div>
       </div>
       <div class="form-row">
@@ -284,20 +284,20 @@
       </div>
       <div id="error-msg" class="error-msg"></div>
       <div id="paypal-buttons"></div>
-      <div class="secure-badge">Paiement sÃ©curisÃ© par PayPal</div>
+      <div class="secure-badge">Paiement sécurisé par PayPal</div>
       <button class="btn-back" id="btn-back-info" type="button">&larr; Revenir aux informations</button>
     </div>
 
-    <!-- SuccÃ¨s -->
+    <!-- Succès -->
     <div id="success" class="success-msg">
       <div class="check-icon">&#10003;</div>
-      <h2>Paiement confirmÃ© !</h2>
-      <p>Votre commande a Ã©tÃ© enregistrÃ©e. Vous recevrez un email de confirmation.</p>
-      <a id="return-link" href="#">Retour Ã  la boutique</a>
+      <h2>Paiement confirmé !</h2>
+      <p>Votre commande a été enregistrée. Vous recevrez un email de confirmation.</p>
+      <a id="return-link" href="#">Retour à la boutique</a>
     </div>
   </div>
 
-  <!-- Colonne droite : rÃ©cap commande -->
+  <!-- Colonne droite : récap commande -->
   <div class="checkout-right">
     <div class="summary-title">Votre commande</div>
     <div id="cart-items"></div>
@@ -319,7 +319,7 @@
     const params = new URLSearchParams(window.location.search);
     const cartParam = params.get("cart");
     if (cartParam) {
-      try { cart = JSON.parse(atob(cartParam)); } catch(e) { console.error("Erreur dÃ©codage panier:", e); }
+      try { cart = JSON.parse(atob(cartParam)); } catch(e) { console.error("Erreur décodage panier:", e); }
     }
     const itemsParam = params.get("items");
     if (!cart.length && itemsParam) {
@@ -408,7 +408,7 @@
     };
   }
 
-  // --- Navigation Ã©tapes ---
+  // --- Navigation étapes ---
   document.getElementById("btn-to-payment").addEventListener("click", function() {
     if (!validateInfo()) return;
     customerInfo = getCustomerInfo();
@@ -419,7 +419,7 @@
       customerInfo.zip + " " + customerInfo.city + ", " +
       document.getElementById("country").options[document.getElementById("country").selectedIndex].text;
     document.getElementById("recap-address").textContent = addrText;
-    // Changer Ã©tape
+    // Changer étape
     document.getElementById("step-info").style.display = "none";
     document.getElementById("step-pay").classList.add("visible");
     document.getElementById("step-info-label").classList.remove("active");
@@ -472,7 +472,7 @@
           });
           const order = await res.json();
           if (order.id) return order.id;
-          throw new Error(order.error || "Erreur crÃ©ation commande");
+          throw new Error(order.error || "Erreur création commande");
         },
         onApprove: async function(data) {
           const res = await fetch(API_BASE + "/api/orders/" + data.orderID + "/capture", {
@@ -488,20 +488,20 @@
               window.parent.postMessage({ type: "checkout-success", orderID: data.orderID, status: "COMPLETED" }, "*");
             }
           } else {
-            showError("Le paiement n'a pas pu Ãªtre finalisÃ©. Veuillez rÃ©essayer.");
+            showError("Le paiement n'a pas pu être finalisé. Veuillez réessayer.");
           }
         },
         onError: function(err) {
           console.error("PayPal error:", err);
-          showError("Erreur de paiement. Veuillez rÃ©essayer.");
+          showError("Erreur de paiement. Veuillez réessayer.");
         },
         onCancel: function() {
-          showError("Paiement annulÃ©.");
+          showError("Paiement annulé.");
         }
       }).render("#paypal-buttons");
     } catch(err) {
       console.error("Init error:", err);
-      showError("Impossible de charger le systÃ¨me de paiement.");
+      showError("Impossible de charger le système de paiement.");
     }
   }
 
